@@ -251,12 +251,18 @@ def parse_intent(
         system_prompt += f"\n\nCurrent app definition:\n{json.dumps(existing_app, indent=2)}\n\nUser is asking to refine this app."
 
     # Initialize OpenAI client (use OpenRouter if OPENROUTER_API_KEY is set)
-    api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
-    base_url = os.getenv("OPENAI_BASE_URL", "https://openrouter.ai/api/v1")
+    openrouter_key = os.getenv("OPENROUTER_API_KEY")
+    if openrouter_key:
+        api_key = openrouter_key
+        base_url = os.getenv("OPENAI_BASE_URL", "https://openrouter.ai/api/v1")
+    else:
+        api_key = os.getenv("OPENAI_API_KEY")
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
     client = OpenAI(api_key=api_key, base_url=base_url)
 
     # Call LLM with tool calling
-    model = os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini")  # Changed to a more available model
+    default_model = "openai/gpt-4o-mini" if openrouter_key else "gpt-4o-mini"
+    model = os.getenv("OPENAI_MODEL", default_model)
     try:
         response = client.chat.completions.create(
             model=model,

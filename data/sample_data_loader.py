@@ -257,6 +257,69 @@ def get_available_tables(conn: Optional[duckdb.DuckDBPyConnection] = None) -> Li
         return ["supply_chain"]  # Fallback
 
 
+# ============================================================================
+# DYNAMIC TABLE REGISTRATION (Custom Schema Injection)
+# ============================================================================
+
+
+def register_uploaded_csv(file_name: str, df: pd.DataFrame) -> str:
+    """
+    Register a user-uploaded CSV as a queryable DuckDB table.
+
+    Args:
+        file_name: Original filename (e.g., "sales_data.csv")
+        df: Pandas DataFrame with the CSV data
+
+    Returns:
+        str: The sanitized table name that was registered
+    """
+    conn = get_connection()
+
+    # Derive table name: strip extension, lowercase, replace spaces/dashes with underscores
+    table_name = os.path.splitext(file_name)[0]
+    table_name = table_name.lower().strip()
+    table_name = table_name.replace(" ", "_").replace("-", "_")
+    # Remove any non-alphanumeric/underscore characters
+    table_name = "".join(c for c in table_name if c.isalnum() or c == "_")
+    # Ensure it doesn't start with a number
+    if table_name and table_name[0].isdigit():
+        table_name = f"t_{table_name}"
+    if not table_name:
+        table_name = "uploaded_data"
+
+    # Drop existing table with same name if it was a previous upload
+    try:
+        conn.execute(f"DROP VIEW IF EXISTS {table_name}")
+    except Exception:
+        pass
+
+    # Register the DataFrame as a DuckDB table
+    conn.register(table_name, df)
+    print(f"✓ Registered uploaded table: {table_name} ({len(df)} rows, {len(df.columns)} columns)")
+
+    return table_name
+
+
+def remove_table(table_name: str) -> bool:
+    """
+    Remove a dynamically registered table.
+
+    Args:
+        table_name: Name of the table to remove
+
+    Returns:
+        bool: True if successfully removed
+    """
+    conn = get_connection()
+    try:
+        conn.execute(f"DROP VIEW IF EXISTS {table_name}")
+        print(f"✓ Removed table: {table_name}")
+        return True
+    except Exception as e:
+        print(f"⚠️ Failed to remove {table_name}: {e}")
+        return False
+
+
 if __name__ == "__main__":
     # Quick test
     conn = get_connection()

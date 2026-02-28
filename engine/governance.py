@@ -205,6 +205,11 @@ def check_column_access(sql_query: str, role: str) -> Dict[str, Any]:
             if not allowed:
                 blocked_columns.append(col)
 
+    # NOTE: Columns NOT in COLUMN_SENSITIVITY_MAP (e.g., from user-uploaded CSVs)
+    # are treated as "public" by default — they won't appear in blocked_columns
+    # because we only check columns that exist in the sensitivity map.
+    # This enables custom schema injection without manual config.
+
     return {
         "allowed": len(blocked_columns) == 0,
         "blocked_columns": blocked_columns,

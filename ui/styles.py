@@ -300,7 +300,7 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     color: var(--text-primary);
     border-radius: 16px 16px 4px 16px;
     padding: 12px 16px;
-    max-width: 70%;
+    max-width: 85%;
     font-size: 14px;
     line-height: 1.6;
     word-wrap: break-word;
@@ -312,7 +312,7 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     color: var(--text-body);
     border-radius: 16px 16px 16px 4px;
     padding: 12px 16px;
-    max-width: 85%;
+    max-width: 95%;
     font-size: 14px;
     line-height: 1.6;
     word-wrap: break-word;
@@ -324,10 +324,12 @@ section[data-testid="stSidebar"] .stButton > button:hover {
    CHAT-DOMINANT LAYOUT
    ══════════════════════════════════════ */
 
-/* Main content — constrain width like ChatGPT for readability */
+/* Main content — fill available width with some breathing room */
 .stMainBlockContainer {
-    max-width: 780px !important;
+    max-width: 1200px !important;
     margin: 0 auto !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
     padding-bottom: 100px !important;
 }
 
@@ -926,13 +928,52 @@ hr {
     color: var(--text-secondary);
 }
 
-/* ── Sidebar expander overrides (minimal) ── */
+/* ── Sidebar expander overrides ── */
 section[data-testid="stSidebar"] .stExpander,
 section[data-testid="stSidebar"] [data-testid="stExpander"] {
     border: none !important;
     box-shadow: none !important;
     background-color: transparent !important;
     margin: 0 !important;
+}
+/* Summary bar — keep font-size:0 inherited from nuclear fix (hides icon ligature text) */
+section[data-testid="stSidebar"] .stExpander summary,
+section[data-testid="stSidebar"] [data-testid="stExpander"] summary,
+section[data-testid="stSidebar"] details summary {
+    background-color: transparent !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 8px 10px !important;
+    border-radius: var(--radius-sm) !important;
+}
+/* Restore font on ALL children inside sidebar summary.
+   DO NOT set display — icon spans must keep display:none from global rules. */
+section[data-testid="stSidebar"] .stExpander summary *,
+section[data-testid="stSidebar"] [data-testid="stExpander"] summary *,
+section[data-testid="stSidebar"] details summary * {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    color: var(--text-tertiary) !important;
+    font-family: var(--font) !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+}
+/* Re-enforce hiding of icon/toggle spans (cascade after wildcard above) */
+section[data-testid="stSidebar"] .stExpander summary > span:first-child,
+section[data-testid="stSidebar"] [data-testid="stExpander"] summary > span:first-child,
+section[data-testid="stSidebar"] details summary > span:first-child,
+section[data-testid="stSidebar"] .stExpander summary [data-testid="stExpanderToggleIcon"],
+section[data-testid="stSidebar"] [data-testid="stExpander"] summary [data-testid="stExpanderToggleIcon"],
+section[data-testid="stSidebar"] .stExpander summary svg,
+section[data-testid="stSidebar"] [data-testid="stExpander"] summary svg,
+section[data-testid="stSidebar"] details summary svg {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    font-size: 0 !important;
 }
 section[data-testid="stSidebar"] .stExpander [data-testid="stExpanderDetails"],
 section[data-testid="stSidebar"] [data-testid="stExpander"] [data-testid="stExpanderDetails"] {

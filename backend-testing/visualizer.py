@@ -1,78 +1,96 @@
-from pathlib import Path
+from flask import Flask, render_template_string
 import json
+import os
+from pathlib import Path
 
-import streamlit as st
-import streamlit.components.v1 as components
+app = Flask(__name__)
 
-try:
-    import plotly.io as pio
-except Exception:
-    pio = None
+# Path to outputs folder
+OUTPUTS_DIR = Path(__file__).parent / "outputs"
 
+def load_json_files():
+    """Load all JSON files from outputs folder"""
+    tables = {}
+    if OUTPUTS_DIR.exists():
+        for file in OUTPUTS_DIR.glob("*.json"):
+            try:
+                with open(file, 'r') as f:
+                    tables[file.stem] = json.load(f)
+            except Exception as e:
+                print(f"Error loading {file}: {e}")
+    return tables
 
-OUTPUTS_DIR = Path(__file__).resolve().parent / "outputs"
-IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg"}
-HTML_EXTS = {".html", ".htm"}
-PLOTLY_JSON_EXTS = {".json"}
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StackForge Visualizer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .tabs { display: flex; gap: 10px; border-bottom: 2px solid #ccc; margin-bottom: 20px; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #f0f0f0; }
+        .tab-btn.active { background: #007bff; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>StackForge Visualizer</h1>
+    <div class="tabs">
+        {% for name in tables.keys() %}
+            <button class="tab-btn {% if loop.first %}active{% endif %}" onclick="showTab('{{ name }}')">
+                {{ name }}
+            </button>
+        {% endfor %}
+    </div>
+    
+    {% for name, data in tables.items() %}
+        <div class="tab-content {% if loop.first %}active{% endif %}" id="tab-{{ name }}">
+            <h2>{{ name }}</h2>
+            {% if data is string %}
+                <pre>{{ data }}</pre>
+            {% else %}
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in data[0].keys() %}
+                                <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                            <tr>
+                                {% for value in row.values() %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    {% endfor %}
+    
+    <script>
+        function showTab(name) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
+"""
 
+@app.route('/')
+def index():
+    tables = load_json_files()
+    return render_template_string(HTML_TEMPLATE, tables=tables)
 
-def list_graph_files(directory: Path):
-    if not directory.exists():
-        return []
-
-    files = [
-        p for p in directory.iterdir()
-        if p.is_file() and (p.suffix.lower() in IMAGE_EXTS | HTML_EXTS | PLOTLY_JSON_EXTS)
-    ]
-    return sorted(files, key=lambda p: p.name.lower())
-
-
-def show_file(path: Path):
-    ext = path.suffix.lower()
-    st.subheader(path.name)
-
-    if ext in IMAGE_EXTS:
-        st.image(str(path), use_container_width=True)
-        return
-
-    if ext in HTML_EXTS:
-        html = path.read_text(encoding="utf-8", errors="ignore")
-        components.html(html, height=700, scrolling=True)
-        return
-
-    if ext in PLOTLY_JSON_EXTS:
-        if pio is None:
-            st.warning("检测到 Plotly JSON，但未安装 plotly。请先安装：pip install plotly")
-            return
-        try:
-            fig = pio.from_json(path.read_text(encoding="utf-8"))
-            st.plotly_chart(fig, use_container_width=True)
-        except json.JSONDecodeError:
-            st.error("JSON 文件解析失败。")
-        except Exception as e:
-            st.error(f"渲染失败: {e}")
-
-
-def main():
-    st.set_page_config(page_title="Graph Visualizer", layout="wide")
-    st.title("Outputs Graph Visualizer")
-    st.caption(f"目录: {OUTPUTS_DIR}")
-
-    files = list_graph_files(OUTPUTS_DIR)
-    if not OUTPUTS_DIR.exists():
-        st.error(f"未找到 outputs 目录: {OUTPUTS_DIR}")
-        return
-
-    if not files:
-        st.info("outputs 目录中未找到可显示的图表文件。")
-        return
-
-    cols = st.columns(2)
-    for i, f in enumerate(files):
-        with cols[i % 2]:
-            show_file(f)
-            st.divider()
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

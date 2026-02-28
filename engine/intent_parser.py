@@ -59,7 +59,7 @@ APP_INTENT_FUNCTION = {
                             },
                             "sql_query": {
                                 "type": "string",
-                                "description": "SQL query to fetch data (SELECT from supply_chain table)",
+                                "description": "SQL query to fetch data (SELECT from any available table)",
                             },
                             "config": {
                                 "type": "object",
@@ -170,22 +170,23 @@ APP_INTENT_FUNCTION = {
 
 SYSTEM_PROMPT_TEMPLATE = """You are an expert data engineer helping users create interactive data dashboards.
 
-The user has a supply chain dataset with the following structure:
+The user has access to multiple datasets with the following structure:
 
 {schema}
 
-Sample data (first 5 rows):
+Sample data from each table:
 {sample_data}
 
 Based on the user's request, create an app definition that:
-1. Uses SQL queries to fetch the right data
+1. Uses SQL queries to fetch the right data from any available table
 2. Includes appropriate visualizations (charts, tables, KPIs)
 3. Provides useful filters for exploration
 4. Follows the app_definition schema exactly
 
 IMPORTANT SQL RULES:
 - All SQL queries must be valid DuckDB syntax
-- All SQL queries must SELECT FROM the 'supply_chain' table
+- You can query any of the available tables listed in the schema above
+- You can perform JOINs between tables using common columns (like region, etc.)
 - Only use columns that exist in the schema above
 - Keep queries efficient (avoid SELECT *)
 - For aggregations, use GROUP BY appropriately
@@ -229,15 +230,14 @@ def parse_intent(
     Raises:
         ValueError: If GPT-5.1 response is invalid or missing function call
     """
-    from data.sample_data_loader import get_table_schema, get_sample_rows
+    from data.sample_data_loader import get_table_schema, get_all_sample_data
 
     # Load schema and sample data if not provided
     if table_schema is None:
         table_schema = get_table_schema()
 
     if sample_data is None:
-        sample_df = get_sample_rows(n=5)
-        sample_data = sample_df.to_string()
+        sample_data = get_all_sample_data(n=3)
 
     # Inject schema into system prompt
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(

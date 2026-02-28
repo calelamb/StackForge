@@ -160,6 +160,22 @@ def get_sample_rows(conn: Optional[duckdb.DuckDBPyConnection] = None, n: int = 5
     return df
 
 
+def get_sample_data(conn: Optional[duckdb.DuckDBPyConnection] = None, n: int = 5) -> str:
+    """
+    Returns sample rows as a formatted string for prompt injection.
+    Alias for get_sample_rows().to_string() used by pipeline.py.
+
+    Args:
+        conn: Optional DuckDB connection. Uses singleton if not provided.
+        n: Number of rows to return (default 5)
+
+    Returns:
+        str: Formatted sample data string
+    """
+    df = get_sample_rows(conn=conn, n=n)
+    return df.to_string()
+
+
 if __name__ == "__main__":
     # Quick test
     conn = get_connection()

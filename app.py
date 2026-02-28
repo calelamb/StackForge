@@ -896,28 +896,19 @@ def main():
 
         st.markdown('<div class="section-label">Your Data</div>', unsafe_allow_html=True)
         for tbl in current_tables:
-            if tbl in uploaded:
-                info = uploaded[tbl]
-                st.markdown(
-                    f'<div style="display:flex;align-items:center;justify-content:space-between;'
-                    f'padding:6px 10px;background:#f0fdf4;border:1px solid #bbf7d0;'
-                    f'border-radius:8px;margin-bottom:4px;font-size:12px">'
-                    f'<span style="color:#166534;font-weight:600">'
-                    f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
-                    f'<span style="color:#6b7280">{info["rows"]} rows</span>'
-                    f'</div>',
-                    unsafe_allow_html=True,
-                )
-            else:
-                st.markdown(
-                    f'<div style="display:flex;align-items:center;'
-                    f'padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;'
-                    f'border-radius:8px;margin-bottom:4px;font-size:12px">'
-                    f'<span style="color:#334155;font-weight:500">'
-                    f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
-                    f'</div>',
-                    unsafe_allow_html=True,
-                )
+            if tbl not in uploaded:
+                continue
+            info = uploaded[tbl]
+            st.markdown(
+                f'<div style="display:flex;align-items:center;justify-content:space-between;'
+                f'padding:6px 10px;background:#f0fdf4;border:1px solid #bbf7d0;'
+                f'border-radius:8px;margin-bottom:4px;font-size:12px">'
+                f'<span style="color:#166534;font-weight:600">'
+                f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
+                f'<span style="color:#6b7280">{info["rows"]} rows</span>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
 
         # ── CSV Upload ──
         csv_files = st.file_uploader(

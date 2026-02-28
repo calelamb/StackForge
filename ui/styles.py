@@ -97,7 +97,7 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     background-color: transparent !important;
     color: var(--text-secondary) !important;
     border: none !important;
-    border-radius: 4px !important;
+    border-radius: 8px !important;
     font-family: var(--font) !important;
     font-weight: 400 !important;
     font-size: 13px !important;
@@ -118,7 +118,7 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     background-color: var(--accent) !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     font-family: var(--font) !important;
     font-weight: 500 !important;
     font-size: 13px !important;
@@ -200,7 +200,7 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     background-color: #ffffff !important;
     color: var(--text-primary) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     font-family: var(--font) !important;
     font-size: 13px !important;
 }
@@ -211,8 +211,20 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     border-color: var(--accent) !important;
     box-shadow: none !important;
 }
+
+/* ── Bottom container (kill the dark dock) ── */
+div[data-testid="stBottom"] {
+    background-color: transparent !important;
+    border-top: none !important;
+    padding: 0 16px 16px 16px !important;
+}
+div[data-testid="stBottom"] > div {
+    background-color: transparent !important;
+}
+
+/* ── Chat input bar ── */
 [data-testid="stChatInput"] {
-    background-color: var(--bg-page) !important;
+    background-color: transparent !important;
     border-top: none !important;
 }
 [data-testid="stChatInput"] > div {
@@ -221,16 +233,18 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     border-radius: 12px !important;
 }
 [data-testid="stChatInput"] textarea {
+    background-color: #ffffff !important;
+    color: var(--text-primary) !important;
     border: none !important;
     border-radius: 12px !important;
 }
 [data-testid="stChatInput"] textarea::placeholder { color: var(--text-tertiary) !important; }
 [data-testid="stChatInput"] button {
     background-color: transparent !important;
-    color: var(--text-tertiary) !important;
+    color: var(--text-secondary) !important;
     border: none !important;
 }
-[data-testid="stChatInput"] button:hover { color: var(--accent) !important; }
+[data-testid="stChatInput"] button:hover { color: var(--text-primary) !important; }
 
 /* ══════════════════════════════════════
    METRICS
@@ -263,13 +277,13 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 [data-testid="stDataFrame"] {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
     overflow: hidden !important;
 }
 .streamlit-expanderHeader {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     color: var(--text-primary) !important;
     font-family: var(--font) !important;
     font-weight: 500 !important;
@@ -279,18 +293,18 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     background-color: #f9fafb !important;
     border: 1px solid var(--border) !important;
     border-top: none !important;
-    border-radius: 0 0 6px 6px !important;
+    border-radius: 0 0 8px 8px !important;
 }
 details summary { color: var(--text-primary) !important; }
 .stCodeBlock, pre, code {
     background-color: #1e1e2e !important;
     color: #e6edf3 !important;
     border: 1px solid #30363d !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     font-size: 12px !important;
 }
 [data-testid="stAlert"] {
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     font-family: var(--font) !important;
     font-size: 13px !important;
 }
@@ -301,12 +315,12 @@ details summary { color: var(--text-primary) !important; }
 .stTabs [data-baseweb="tab-list"] {
     gap: 0 !important;
     background-color: var(--bg-card) !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     padding: 3px !important;
     border: 1px solid var(--border) !important;
 }
 .stTabs [data-baseweb="tab-list"] button {
-    border-radius: 4px !important;
+    border-radius: 6px !important;
     color: var(--text-secondary) !important;
     font-family: var(--font) !important;
     font-weight: 500 !important;
@@ -325,7 +339,7 @@ details summary { color: var(--text-primary) !important; }
 [data-testid="stPlotlyChart"] {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
     padding: 8px !important;
 }
 
@@ -337,7 +351,7 @@ details summary { color: var(--text-primary) !important; }
     align-items: center;
     gap: 6px;
     padding: 4px 12px;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 500;
     font-family: var(--font);
@@ -394,15 +408,18 @@ details summary { color: var(--text-primary) !important; }
 .feature-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 20px;
     flex: 1;
     min-width: 190px;
     max-width: 230px;
     text-align: left;
-    transition: border-color 0.12s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.feature-card:hover { border-color: #d1d5db; }
+.feature-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
 .feature-label {
     font-weight: 600;
     font-size: 14px;
@@ -528,7 +545,7 @@ hr {
 [data-testid="stJson"] {
     background-color: #1e1e2e !important;
     border: 1px solid #30363d !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
 }
 
 .ind-pass { color: #16a34a; font-size: 10px; }

@@ -3,16 +3,7 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 
-# ─── Page config (MUST be first Streamlit call) ───
-st.set_page_config(
-    page_title="StackForge",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
-
-# ─── Inject custom CSS ───
 from ui.styles import inject_custom_css
-inject_custom_css(st)
 
 # ─── Auth constants ───
 PASSWORDS = {"admin": "admin123", "analyst": "analyst", "viewer": "viewer"}
@@ -33,9 +24,6 @@ DEFAULTS = {
     "messages": [],
     "show_engine": False,
 }
-for k, v in DEFAULTS.items():
-    if k not in st.session_state:
-        st.session_state[k] = v
 
 # ─── Templates ───
 TEMPLATES = [
@@ -593,16 +581,39 @@ def render_login_screen():
 
 
 # ============================================================================
-# MAIN APP (after login)
+# MAIN ENTRY POINT
 # ============================================================================
 
 
-def render_main_app():
-    """Chat-centric layout with sidebar control panel."""
+def main():
+    st.set_page_config(
+        page_title="StackForge",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+    inject_custom_css(st)
+
+    # ── Initialize session state ──
+    for k, v in DEFAULTS.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
+
+    # ── STATE 1: Not logged in ──
+    if not st.session_state["logged_in"]:
+        render_login_screen()
+        return  # HARD RETURN — nothing else renders
+
+    # ── STATE 2: Logged in — everything below is authenticated-only ──
 
     # ── SIDEBAR ──
     with st.sidebar:
         st.markdown('<div class="sidebar-brand">StackForge</div>', unsafe_allow_html=True)
+        role = st.session_state["user_role"]
+        st.caption(f"Signed in as **{ROLE_DISPLAY.get(role, role)}**")
+        if st.button("Sign out", key="logout_btn", use_container_width=True):
+            st.session_state["logged_in"] = False
+            st.session_state["user_role"] = None
+            st.rerun()
         st.markdown("<hr>", unsafe_allow_html=True)
 
         # ── Templates ──
@@ -620,30 +631,13 @@ def render_main_app():
             "Show Engine", value=st.session_state.show_engine
         )
 
-        st.markdown("<hr>", unsafe_allow_html=True)
-
-        # ── Settings ──
-        st.markdown('<div class="section-label">Session</div>', unsafe_allow_html=True)
-        role = st.session_state.user_role
-        st.markdown(
-            f"<p style='font-size:13px;color:#374151;margin:0'>"
-            f"{ROLE_DISPLAY.get(role, role)}</p>"
-            f"<p style='font-size:11px;color:#9ca3af;margin:0 0 8px 0'>"
-            f"{ROLE_DESC.get(role, '')}</p>",
-            unsafe_allow_html=True,
-        )
-        if st.button("Sign out", key="logout_btn", use_container_width=True):
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
-
         # ── Footer ──
         st.markdown(
             '<div class="sidebar-footer">StackForge v1.0</div>',
             unsafe_allow_html=True,
         )
 
-    # ── MAIN AREA: Chat ──
+    # ── MAIN AREA ──
     if not st.session_state.messages:
         # ── Welcome state ──
         st.markdown("""
@@ -729,11 +723,4 @@ def render_main_app():
         st.rerun()
 
 
-# ============================================================================
-# TOP-LEVEL ROUTING
-# ============================================================================
-
-if not st.session_state.logged_in:
-    render_login_screen()
-else:
-    render_main_app()
+main()

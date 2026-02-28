@@ -730,6 +730,29 @@ details summary {
     border: none;
 }
 
+/* ── Narration / Overview ── */
+.narration-summary {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text-body);
+    padding: 10px 14px;
+    margin: 8px 0 12px;
+    border-left: 3px solid var(--accent);
+    background: rgba(99, 102, 241, 0.04);
+    border-radius: 0 8px 8px 0;
+    font-family: var(--font);
+}
+.narration-component {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    margin: 4px 0 8px;
+    border-radius: 6px;
+    font-family: var(--font);
+    font-style: italic;
+}
+
 /* ══════════════════════════════════════
    WELCOME STATE
    ══════════════════════════════════════ */

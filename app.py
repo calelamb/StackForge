@@ -567,8 +567,17 @@ def _render_inline_dashboard(result):
     app_def = result.get("app_definition", {})
     exec_results = result.get("execution_results", {})
     gov = result.get("governance", {})
+    overview = result.get("overview", {})
     passed = gov.get("passed", True)
     role_display = gov.get("role_display_name", gov.get("role", "?"))
+
+    # Build narration lookup: component_id → narration text
+    narration_map = {}
+    for nc in overview.get("components", []):
+        nid = nc.get("id", "")
+        ntxt = nc.get("narration", "")
+        if nid and ntxt:
+            narration_map[nid] = ntxt
 
     # ── Governance badge ──
     if passed:
@@ -593,6 +602,14 @@ def _render_inline_dashboard(result):
             )
         return
 
+    # ── Overview summary ──
+    summary = overview.get("summary", "")
+    if summary:
+        st.markdown(
+            f'<div class="narration-summary">{summary}</div>',
+            unsafe_allow_html=True,
+        )
+
     # ── Render components ──
     components = app_def.get("components", [])
     kpis = [c for c in components if c.get("type") in ("kpi_card", "metric_highlight")]
@@ -609,6 +626,12 @@ def _render_inline_dashboard(result):
                     renderer = RENDERERS.get(comp.get("type"))
                     if renderer:
                         renderer(comp, data)
+                    narration = narration_map.get(cid, "")
+                    if narration:
+                        st.markdown(
+                            f'<div class="narration-component">{narration}</div>',
+                            unsafe_allow_html=True,
+                        )
 
     if charts:
         for i in range(0, len(charts), 2):
@@ -624,6 +647,12 @@ def _render_inline_dashboard(result):
                         renderer(comp, data)
                     else:
                         st.info(f"Unsupported: {ctype}")
+                    narration = narration_map.get(cid, "")
+                    if narration:
+                        st.markdown(
+                            f'<div class="narration-component">{narration}</div>',
+                            unsafe_allow_html=True,
+                        )
 
     # ── Governance report ──
     with st.expander("Governance Report"):

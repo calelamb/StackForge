@@ -1,0 +1,2655 @@
+{
+  "saved_at": "2026-02-28T10:20:10.832554",
+  "prompt": "Give me a rundown on this dataset",
+  "result": {
+    "app_definition": {
+      "app_title": "App & Supply Chain Data Overview",
+      "app_description": "High-level overview of app privacy risk metrics, customer segments, and supply chain performance for exploratory analysis.",
+      "components": [
+        {
+          "id": "kpi_total_apps",
+          "type": "kpi_card",
+          "title": "Total Apps Profiled",
+          "sql_query": "SELECT COUNT(DISTINCT app_id) AS total_apps FROM appmicroscope_data_clean_cert___appmicroscope_data_clean_cert;",
+          "config": {
+            "value_column": "total_apps",
+            "metric_name": "Total Apps",
+            "format": "number"
+          }
+        },
+        {
+          "id": "kpi_avg_sdk_risk",
+          "type": "kpi_card",
+          "title": "Average SDK Risk Score",
+          "sql_query": "SELECT AVG(sdk_risk_score) AS avg_sdk_risk FROM appmicroscope_data_clean_cert___appmicroscope_data_clean_cert;",
+          "config": {
+            "value_column": "avg_sdk_risk",
+            "metric_name": "Avg SDK Risk Score",
+            "format": "number"
+          }
+        },
+        {
+          "id": "bar_apps_by_category",
+          "type": "bar_chart",
+          "title": "Apps by Category (Binned)",
+          "sql_query": "SELECT category_binned AS category, COUNT(DISTINCT app_id) AS app_count FROM appmicroscope_data_clean_cert___appmicroscope_data_clean_cert WHERE category_binned IS NOT NULL GROUP BY category_binned ORDER BY app_count DESC;",
+          "config": {
+            "x_axis": "category",
+            "y_axis": "app_count",
+            "format": "number"
+          }
+        },
+        {
+          "id": "table_top_risky_apps",
+          "type": "table",
+          "title": "Top Apps by Company Risk Score",
+          "sql_query": "SELECT app_name, company_name, category_binned, company_risk_score, sdk_risk_score, permissions_risk_score FROM appmicroscope_data_clean_cert___appmicroscope_data_clean_cert WHERE company_risk_score IS NOT NULL ORDER BY company_risk_score DESC LIMIT 50;",
+          "config": {
+            "columns": [
+              "app_name",
+              "company_name",
+              "category_binned",
+              "company_risk_score",
+              "sdk_risk_score",
+              "permissions_risk_score"
+            ],
+            "sort_column": "company_risk_score",
+            "sort_order": "desc"
+          }
+        },
+        {
+          "id": "line_supply_cost_over_time",
+          "type": "line_chart",
+          "title": "Total Supply Chain Cost Over Time",
+          "sql_query": "SELECT order_date, SUM(total_cost + shipping_cost + warehouse_cost) AS total_supply_cost FROM supply_chain GROUP BY order_date ORDER BY order_date;",
+          "config": {
+            "x_axis": "order_date",
+            "y_axis": "total_supply_cost",
+            "format": "currency"
+          }
+        },
+        {
+          "id": "bar_defect_rate_by_supplier",
+          "type": "bar_chart",
+          "title": "Average Defect Rate by Supplier",
+          "sql_query": "SELECT supplier, AVG(defect_rate) AS avg_defect_rate FROM supply_chain GROUP BY supplier ORDER BY avg_defect_rate DESC;",
+          "config": {
+            "x_axis": "supplier",
+            "y_axis": "avg_defect_rate",
+            "format": "number"
+          }
+        },
+        {
+          "id": "table_customers_overview",
+          "type": "table",
+          "title": "Customer Segments Overview",
+          "sql_query": "SELECT customer_id, customer_name, industry, company_size, revenue_category, region, satisfaction_score, last_order_date FROM customers ORDER BY last_order_date DESC;",
+          "config": {
+            "columns": [
+              "customer_id",
+              "customer_name",
+              "industry",
+              "company_size",
+              "revenue_category",
+              "region",
+              "satisfaction_score",
+              "last_order_date"
+            ],
+            "sort_column": "last_order_date",
+            "sort_order": "desc"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "id": "f_app_category",
+          "name": "App Category (Binned)",
+          "column": "category_binned",
+          "type": "multiselect"
+        },
+        {
+          "id": "f_app_os",
+          "name": "App OS",
+          "column": "OS",
+          "type": "multiselect"
+        },
+        {
+          "id": "f_supply_region",
+          "name": "Supply Chain Region",
+          "column": "region",
+          "type": "multiselect"
+        },
+        {
+          "id": "f_supply_date",
+          "name": "Supply Order Date",
+          "column": "order_date",
+          "type": "date_range"
+        },
+        {
+          "id": "f_customer_region",
+          "name": "Customer Region",
+          "column": "region",
+          "type": "multiselect"
+        }
+      ]
+    },
+    "execution_results": {
+      "kpi_total_apps": {
+        "status": "success",
+        "data": [
+          {
+            "total_apps": 1694
+          }
+        ],
+        "row_count": 1
+      },
+      "kpi_avg_sdk_risk": {
+        "status": "success",
+        "data": [
+          {
+            "avg_sdk_risk": 20.429161747343567
+          }
+        ],
+        "row_count": 1
+      },
+      "bar_apps_by_category": {
+        "status": "success",
+        "data": [
+          {
+            "category": "Edtech",
+            "app_count": 940
+          },
+          {
+            "category": "Other",
+            "app_count": 175
+          },
+          {
+            "category": "Health & Fitness",
+            "app_count": 132
+          },
+          {
+            "category": "Education",
+            "app_count": 117
+          },
+          {
+            "category": "Books",
+            "app_count": 108
+          },
+          {
+            "category": "Games",
+            "app_count": 93
+          },
+          {
+            "category": "Business & Productivity",
+            "app_count": 66
+          },
+          {
+            "category": "News & Magazines",
+            "app_count": 63
+          }
+        ],
+        "row_count": 8
+      },
+      "table_top_risky_apps": {
+        "status": "success",
+        "data": [
+          {
+            "app_name": "Palm Beach County School Dist",
+            "company_name": "Intrado Corporation",
+            "category_binned": "Edtech",
+            "company_risk_score": 509.0,
+            "sdk_risk_score": 63.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "AllSides - Balanced News",
+            "company_name": "AllSides",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 433.0,
+            "sdk_risk_score": 25.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Westover Christian Academy",
+            "company_name": "Apptegy",
+            "category_binned": "Edtech",
+            "company_risk_score": 432.0,
+            "sdk_risk_score": 16.0,
+            "permissions_risk_score": 19.0
+          },
+          {
+            "app_name": "Atlanta Public Schools (APS)",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 388.0,
+            "sdk_risk_score": 33.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "SBLive Sports",
+            "company_name": "SBLive Sports",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 358.0,
+            "sdk_risk_score": 24.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Central Dauphin Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 358.0,
+            "sdk_risk_score": 47.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Montgomery Public Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 356.0,
+            "sdk_risk_score": 47.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Palm Beach County School Dist",
+            "company_name": "Intrado Corporation",
+            "category_binned": "Edtech",
+            "company_risk_score": 347.0,
+            "sdk_risk_score": 6.0,
+            "permissions_risk_score": 15.0
+          },
+          {
+            "app_name": "Madison County Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 341.0,
+            "sdk_risk_score": 37.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Oakes Public Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 319.0,
+            "sdk_risk_score": 40.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Blue Valley Schools KS",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 313.0,
+            "sdk_risk_score": 8.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Hays CISD",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 294.0,
+            "sdk_risk_score": 47.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Birmingham City Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 292.0,
+            "sdk_risk_score": 41.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Henry County Schools (GA)",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 289.0,
+            "sdk_risk_score": 33.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Prince George's County PS",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 283.0,
+            "sdk_risk_score": 33.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Alexandria City Public Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 270.0,
+            "sdk_risk_score": 23.0,
+            "permissions_risk_score": 3.0
+          },
+          {
+            "app_name": "Plant City High School",
+            "company_name": "Heather Hanks",
+            "category_binned": "Edtech",
+            "company_risk_score": 266.0,
+            "sdk_risk_score": 37.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Rogers Public Schools Athletics",
+            "company_name": "Mascot Media",
+            "category_binned": "Edtech",
+            "company_risk_score": 265.0,
+            "sdk_risk_score": 0.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "KEVN Black Hills FOX News",
+            "company_name": "Gray Television",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 260.0,
+            "sdk_risk_score": 26.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Kenai Peninsula Borough SD",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 259.0,
+            "sdk_risk_score": 40.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Madison County Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 258.0,
+            "sdk_risk_score": 23.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Omaha World-Herald Omaha.com",
+            "company_name": "Lee BHM Corp.",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 252.0,
+            "sdk_risk_score": 64.0,
+            "permissions_risk_score": 26.0
+          },
+          {
+            "app_name": "Hudson City Schools - Ohio",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 250.0,
+            "sdk_risk_score": 37.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Hudson City Schools - Ohio",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 242.0,
+            "sdk_risk_score": 12.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Plant City HS",
+            "company_name": "Heather Hanks",
+            "category_binned": "Edtech",
+            "company_risk_score": 237.0,
+            "sdk_risk_score": 28.0,
+            "permissions_risk_score": 18.0
+          },
+          {
+            "app_name": "KOTA News",
+            "company_name": "Gray Television",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 232.0,
+            "sdk_risk_score": 49.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "The Wall Street Journal.",
+            "company_name": "Dow Jones & Company",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 232.0,
+            "sdk_risk_score": 40.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Omaha World-Herald Omahacom",
+            "company_name": "Lee BHM Corp.",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 230.0,
+            "sdk_risk_score": 60.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Atlanta Public Schools (APS)",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 230.0,
+            "sdk_risk_score": 4.0,
+            "permissions_risk_score": 15.0
+          },
+          {
+            "app_name": "COVID Coach",
+            "company_name": "US Department of Veterans Affairs",
+            "category_binned": "Health & Fitness",
+            "company_risk_score": 227.0,
+            "sdk_risk_score": 5.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Providence Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 225.0,
+            "sdk_risk_score": 33.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "KEVN Black Hills FOX News",
+            "company_name": "Gray Television",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 223.0,
+            "sdk_risk_score": 50.0,
+            "permissions_risk_score": 21.0
+          },
+          {
+            "app_name": "Central Dauphin Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 214.0,
+            "sdk_risk_score": 4.0,
+            "permissions_risk_score": 15.0
+          },
+          {
+            "app_name": "Ritenour Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 213.0,
+            "sdk_risk_score": 23.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "ScoreStream Sports Scores",
+            "company_name": "ScoreStream",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 213.0,
+            "sdk_risk_score": 78.0,
+            "permissions_risk_score": 30.0
+          },
+          {
+            "app_name": "KOTA Territory News",
+            "company_name": "Gray Television",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 212.0,
+            "sdk_risk_score": 50.0,
+            "permissions_risk_score": 21.0
+          },
+          {
+            "app_name": "Titans Athletics",
+            "company_name": "From NowOn",
+            "category_binned": "Edtech",
+            "company_risk_score": 210.0,
+            "sdk_risk_score": 74.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "St. Louis Post-Dispatch",
+            "company_name": "Lee Enterprises",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 210.0,
+            "sdk_risk_score": 41.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Ohio County Schools, WV",
+            "company_name": "Apptegy",
+            "category_binned": "Edtech",
+            "company_risk_score": 210.0,
+            "sdk_risk_score": 13.0,
+            "permissions_risk_score": 19.0
+          },
+          {
+            "app_name": "Weld County School District 6",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 206.0,
+            "sdk_risk_score": 37.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Jamestown 1-ND",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 205.0,
+            "sdk_risk_score": 23.0,
+            "permissions_risk_score": 3.0
+          },
+          {
+            "app_name": "The Weather Channel",
+            "company_name": "TWC Product and Technology",
+            "category_binned": "Other",
+            "company_risk_score": 203.0,
+            "sdk_risk_score": 60.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "The Weather Channel - Radar",
+            "company_name": "TWC Product and Technology",
+            "category_binned": "Other",
+            "company_risk_score": 203.0,
+            "sdk_risk_score": 63.0,
+            "permissions_risk_score": 29.0
+          },
+          {
+            "app_name": "Prince George's County PS",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 202.0,
+            "sdk_risk_score": 4.0,
+            "permissions_risk_score": 15.0
+          },
+          {
+            "app_name": "Imgflip: Make Memes & GIFs",
+            "company_name": "Imgflip",
+            "category_binned": "Other",
+            "company_risk_score": 202.0,
+            "sdk_risk_score": 0.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Journal Star",
+            "company_name": "Lee Enterprises",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 191.0,
+            "sdk_risk_score": 59.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Chicago Tribune",
+            "company_name": "Tribune Publishing Company",
+            "category_binned": "News & Magazines",
+            "company_risk_score": 191.0,
+            "sdk_risk_score": 46.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Berkeley County Schools (WV)",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 190.0,
+            "sdk_risk_score": 37.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Ritenour Schools",
+            "company_name": "Finalsite",
+            "category_binned": "Edtech",
+            "company_risk_score": 190.0,
+            "sdk_risk_score": 37.0,
+            "permissions_risk_score": 0.0
+          },
+          {
+            "app_name": "Pulaski County SSD, AR",
+            "company_name": "Apptegy",
+            "category_binned": "Edtech",
+            "company_risk_score": 190.0,
+            "sdk_risk_score": 17.0,
+            "permissions_risk_score": 12.0
+          }
+        ],
+        "row_count": 50
+      },
+      "line_supply_cost_over_time": {
+        "status": "success",
+        "data": [
+          {
+            "order_date": "2024-01-01",
+            "total_supply_cost": 43978.35
+          },
+          {
+            "order_date": "2024-01-02",
+            "total_supply_cost": 65976.84
+          },
+          {
+            "order_date": "2024-01-03",
+            "total_supply_cost": 50378.130000000005
+          },
+          {
+            "order_date": "2024-01-04",
+            "total_supply_cost": 9907.94
+          },
+          {
+            "order_date": "2024-01-05",
+            "total_supply_cost": 14836.88
+          },
+          {
+            "order_date": "2024-01-06",
+            "total_supply_cost": 10524.07
+          },
+          {
+            "order_date": "2024-01-07",
+            "total_supply_cost": 2303.7
+          },
+          {
+            "order_date": "2024-01-08",
+            "total_supply_cost": 76691.51999999999
+          },
+          {
+            "order_date": "2024-01-09",
+            "total_supply_cost": 22157.6
+          },
+          {
+            "order_date": "2024-01-10",
+            "total_supply_cost": 47936.9
+          },
+          {
+            "order_date": "2024-01-11",
+            "total_supply_cost": 89321.92
+          },
+          {
+            "order_date": "2024-01-12",
+            "total_supply_cost": 2915.57
+          },
+          {
+            "order_date": "2024-01-13",
+            "total_supply_cost": 55787.08
+          },
+          {
+            "order_date": "2024-01-14",
+            "total_supply_cost": 45961.24
+          },
+          {
+            "order_date": "2024-01-15",
+            "total_supply_cost": 14572.960000000001
+          },
+          {
+            "order_date": "2024-01-16",
+            "total_supply_cost": 14607.77
+          },
+          {
+            "order_date": "2024-01-17",
+            "total_supply_cost": 141845.31
+          },
+          {
+            "order_date": "2024-01-18",
+            "total_supply_cost": 92724.29
+          },
+          {
+            "order_date": "2024-01-19",
+            "total_supply_cost": 28636.56
+          },
+          {
+            "order_date": "2024-01-20",
+            "total_supply_cost": 16302.259999999998
+          },
+          {
+            "order_date": "2024-01-21",
+            "total_supply_cost": 62777.23
+          },
+          {
+            "order_date": "2024-01-22",
+            "total_supply_cost": 62775.909999999996
+          },
+          {
+            "order_date": "2024-01-23",
+            "total_supply_cost": 34138.67
+          },
+          {
+            "order_date": "2024-01-24",
+            "total_supply_cost": 80319.57
+          },
+          {
+            "order_date": "2024-01-25",
+            "total_supply_cost": 61203.91
+          },
+          {
+            "order_date": "2024-01-26",
+            "total_supply_cost": 14517.56
+          },
+          {
+            "order_date": "2024-01-27",
+            "total_supply_cost": 39316.020000000004
+          },
+          {
+            "order_date": "2024-01-28",
+            "total_supply_cost": 30499.839999999997
+          },
+          {
+            "order_date": "2024-01-29",
+            "total_supply_cost": 3221.0400000000004
+          },
+          {
+            "order_date": "2024-01-30",
+            "total_supply_cost": 133490.48
+          },
+          {
+            "order_date": "2024-01-31",
+            "total_supply_cost": 5188.7
+          },
+          {
+            "order_date": "2024-02-01",
+            "total_supply_cost": 49185.19
+          },
+          {
+            "order_date": "2024-02-02",
+            "total_supply_cost": 69881.99
+          },
+          {
+            "order_date": "2024-02-03",
+            "total_supply_cost": 30938.07
+          },
+          {
+            "order_date": "2024-02-04",
+            "total_supply_cost": 11219.340000000002
+          },
+          {
+            "order_date": "2024-02-05",
+            "total_supply_cost": 19887.03
+          },
+          {
+            "order_date": "2024-02-06",
+            "total_supply_cost": 65315.619999999995
+          },
+          {
+            "order_date": "2024-02-07",
+            "total_supply_cost": 61582.12
+          },
+          {
+            "order_date": "2024-02-08",
+            "total_supply_cost": 39171.229999999996
+          },
+          {
+            "order_date": "2024-02-09",
+            "total_supply_cost": 9680.65
+          },
+          {
+            "order_date": "2024-02-10",
+            "total_supply_cost": 32964.439999999995
+          },
+          {
+            "order_date": "2024-02-11",
+            "total_supply_cost": 34281.5
+          },
+          {
+            "order_date": "2024-02-12",
+            "total_supply_cost": 5877.61
+          },
+          {
+            "order_date": "2024-02-13",
+            "total_supply_cost": 77898.23000000001
+          },
+          {
+            "order_date": "2024-02-14",
+            "total_supply_cost": 33019.02
+          },
+          {
+            "order_date": "2024-02-15",
+            "total_supply_cost": 77725.76999999999
+          },
+          {
+            "order_date": "2024-02-16",
+            "total_supply_cost": 47988.38
+          },
+          {
+            "order_date": "2024-02-17",
+            "total_supply_cost": 1153.07
+          },
+          {
+            "order_date": "2024-02-18",
+            "total_supply_cost": 35841.66
+          },
+          {
+            "order_date": "2024-02-19",
+            "total_supply_cost": 11215.720000000001
+          },
+          {
+            "order_date": "2024-02-20",
+            "total_supply_cost": 2369.86
+          },
+          {
+            "order_date": "2024-02-21",
+            "total_supply_cost": 118657.65000000001
+          },
+          {
+            "order_date": "2024-02-22",
+            "total_supply_cost": 6541.8
+          },
+          {
+            "order_date": "2024-02-23",
+            "total_supply_cost": 4271.32
+          },
+          {
+            "order_date": "2024-02-24",
+            "total_supply_cost": 182518.28
+          },
+          {
+            "order_date": "2024-02-25",
+            "total_supply_cost": 40418.28
+          },
+          {
+            "order_date": "2024-02-26",
+            "total_supply_cost": 108287.8
+          },
+          {
+            "order_date": "2024-02-27",
+            "total_supply_cost": 2300.83
+          },
+          {
+            "order_date": "2024-02-28",
+            "total_supply_cost": 53121.14
+          },
+          {
+            "order_date": "2024-02-29",
+            "total_supply_cost": 51832.85
+          },
+          {
+            "order_date": "2024-03-01",
+            "total_supply_cost": 1412.79
+          },
+          {
+            "order_date": "2024-03-02",
+            "total_supply_cost": 87166.77
+          },
+          {
+            "order_date": "2024-03-03",
+            "total_supply_cost": 54501.4
+          },
+          {
+            "order_date": "2024-03-04",
+            "total_supply_cost": 70499.11
+          },
+          {
+            "order_date": "2024-03-05",
+            "total_supply_cost": 39204.36
+          },
+          {
+            "order_date": "2024-03-06",
+            "total_supply_cost": 65151.07
+          },
+          {
+            "order_date": "2024-03-07",
+            "total_supply_cost": 70556.93000000001
+          },
+          {
+            "order_date": "2024-03-08",
+            "total_supply_cost": 122160.56999999999
+          },
+          {
+            "order_date": "2024-03-09",
+            "total_supply_cost": 71023.65
+          },
+          {
+            "order_date": "2024-03-10",
+            "total_supply_cost": 34656.5
+          },
+          {
+            "order_date": "2024-03-11",
+            "total_supply_cost": 39393.63
+          },
+          {
+            "order_date": "2024-03-12",
+            "total_supply_cost": 44888.060000000005
+          },
+          {
+            "order_date": "2024-03-13",
+            "total_supply_cost": 73206.15
+          },
+          {
+            "order_date": "2024-03-14",
+            "total_supply_cost": 149884.47
+          },
+          {
+            "order_date": "2024-03-15",
+            "total_supply_cost": 21041.3
+          },
+          {
+            "order_date": "2024-03-16",
+            "total_supply_cost": 40931.81
+          },
+          {
+            "order_date": "2024-03-17",
+            "total_supply_cost": 46151.99999999999
+          },
+          {
+            "order_date": "2024-03-18",
+            "total_supply_cost": 8871.29
+          },
+          {
+            "order_date": "2024-03-19",
+            "total_supply_cost": 60847.65
+          },
+          {
+            "order_date": "2024-03-20",
+            "total_supply_cost": 34990.02
+          },
+          {
+            "order_date": "2024-03-21",
+            "total_supply_cost": 32225.1
+          },
+          {
+            "order_date": "2024-03-22",
+            "total_supply_cost": 60566.58
+          },
+          {
+            "order_date": "2024-03-23",
+            "total_supply_cost": 18405.940000000002
+          },
+          {
+            "order_date": "2024-03-24",
+            "total_supply_cost": 110991.92000000001
+          },
+          {
+            "order_date": "2024-03-25",
+            "total_supply_cost": 6806.65
+          },
+          {
+            "order_date": "2024-03-26",
+            "total_supply_cost": 69186.61
+          },
+          {
+            "order_date": "2024-03-27",
+            "total_supply_cost": 32717.950000000004
+          },
+          {
+            "order_date": "2024-03-28",
+            "total_supply_cost": 65260.65000000001
+          },
+          {
+            "order_date": "2024-03-29",
+            "total_supply_cost": 28875.24
+          },
+          {
+            "order_date": "2024-03-30",
+            "total_supply_cost": 52938.369999999995
+          },
+          {
+            "order_date": "2024-03-31",
+            "total_supply_cost": 26363.26
+          },
+          {
+            "order_date": "2024-04-01",
+            "total_supply_cost": 19194.739999999998
+          },
+          {
+            "order_date": "2024-04-02",
+            "total_supply_cost": 7008.5
+          },
+          {
+            "order_date": "2024-04-03",
+            "total_supply_cost": 54246.43
+          },
+          {
+            "order_date": "2024-04-04",
+            "total_supply_cost": 77226.56999999999
+          },
+          {
+            "order_date": "2024-04-05",
+            "total_supply_cost": 23318.89
+          },
+          {
+            "order_date": "2024-04-06",
+            "total_supply_cost": 24196.96
+          },
+          {
+            "order_date": "2024-04-07",
+            "total_supply_cost": 60877.92999999999
+          },
+          {
+            "order_date": "2024-04-08",
+            "total_supply_cost": 8919.17
+          },
+          {
+            "order_date": "2024-04-09",
+            "total_supply_cost": 20606.18
+          },
+          {
+            "order_date": "2024-04-10",
+            "total_supply_cost": 55248.52
+          },
+          {
+            "order_date": "2024-04-11",
+            "total_supply_cost": 15101.02
+          },
+          {
+            "order_date": "2024-04-12",
+            "total_supply_cost": 21867.65
+          },
+          {
+            "order_date": "2024-04-13",
+            "total_supply_cost": 93997.12
+          },
+          {
+            "order_date": "2024-04-14",
+            "total_supply_cost": 59482.28
+          },
+          {
+            "order_date": "2024-04-15",
+            "total_supply_cost": 104785.62000000001
+          },
+          {
+            "order_date": "2024-04-16",
+            "total_supply_cost": 10246.69
+          },
+          {
+            "order_date": "2024-04-17",
+            "total_supply_cost": 5775.87
+          },
+          {
+            "order_date": "2024-04-18",
+            "total_supply_cost": 25974.089999999997
+          },
+          {
+            "order_date": "2024-04-19",
+            "total_supply_cost": 11031.279999999999
+          },
+          {
+            "order_date": "2024-04-20",
+            "total_supply_cost": 105215.5
+          },
+          {
+            "order_date": "2024-04-21",
+            "total_supply_cost": 4075.9799999999996
+          },
+          {
+            "order_date": "2024-04-22",
+            "total_supply_cost": 13834.01
+          },
+          {
+            "order_date": "2024-04-23",
+            "total_supply_cost": 87534.48
+          },
+          {
+            "order_date": "2024-04-24",
+            "total_supply_cost": 53761.92
+          },
+          {
+            "order_date": "2024-04-25",
+            "total_supply_cost": 74210.23000000001
+          },
+          {
+            "order_date": "2024-04-26",
+            "total_supply_cost": 32919.11
+          },
+          {
+            "order_date": "2024-04-27",
+            "total_supply_cost": 69999.95999999999
+          },
+          {
+            "order_date": "2024-04-28",
+            "total_supply_cost": 119969.28
+          },
+          {
+            "order_date": "2024-04-29",
+            "total_supply_cost": 11435.68
+          },
+          {
+            "order_date": "2024-04-30",
+            "total_supply_cost": 80944.95
+          },
+          {
+            "order_date": "2024-05-01",
+            "total_supply_cost": 75121.12
+          },
+          {
+            "order_date": "2024-05-02",
+            "total_supply_cost": 94670.79999999999
+          },
+          {
+            "order_date": "2024-05-03",
+            "total_supply_cost": 53000.93
+          },
+          {
+            "order_date": "2024-05-04",
+            "total_supply_cost": 38722.93000000001
+          },
+          {
+            "order_date": "2024-05-05",
+            "total_supply_cost": 4683.089999999999
+          },
+          {
+            "order_date": "2024-05-06",
+            "total_supply_cost": 11299.990000000002
+          },
+          {
+            "order_date": "2024-05-07",
+            "total_supply_cost": 61222.240000000005
+          },
+          {
+            "order_date": "2024-05-08",
+            "total_supply_cost": 55461.590000000004
+          },
+          {
+            "order_date": "2024-05-09",
+            "total_supply_cost": 154628.63
+          },
+          {
+            "order_date": "2024-05-10",
+            "total_supply_cost": 14346.08
+          },
+          {
+            "order_date": "2024-05-11",
+            "total_supply_cost": 5922.71
+          },
+          {
+            "order_date": "2024-05-12",
+            "total_supply_cost": 59845.520000000004
+          },
+          {
+            "order_date": "2024-05-13",
+            "total_supply_cost": 71113.92
+          },
+          {
+            "order_date": "2024-05-14",
+            "total_supply_cost": 58382.03
+          },
+          {
+            "order_date": "2024-05-15",
+            "total_supply_cost": 34003.06
+          },
+          {
+            "order_date": "2024-05-16",
+            "total_supply_cost": 25407.27
+          },
+          {
+            "order_date": "2024-05-17",
+            "total_supply_cost": 51464.43000000001
+          },
+          {
+            "order_date": "2024-05-18",
+            "total_supply_cost": 6051.2699999999995
+          },
+          {
+            "order_date": "2024-05-19",
+            "total_supply_cost": 12282.289999999999
+          },
+          {
+            "order_date": "2024-05-20",
+            "total_supply_cost": 104098.99
+          },
+          {
+            "order_date": "2024-05-21",
+            "total_supply_cost": 96148.64000000001
+          },
+          {
+            "order_date": "2024-05-22",
+            "total_supply_cost": 86503.59
+          },
+          {
+            "order_date": "2024-05-23",
+            "total_supply_cost": 89455.18
+          },
+          {
+            "order_date": "2024-05-24",
+            "total_supply_cost": 11383.639999999998
+          },
+          {
+            "order_date": "2024-05-25",
+            "total_supply_cost": 19761.91
+          },
+          {
+            "order_date": "2024-05-26",
+            "total_supply_cost": 9677.29
+          },
+          {
+            "order_date": "2024-05-27",
+            "total_supply_cost": 4694.990000000001
+          },
+          {
+            "order_date": "2024-05-28",
+            "total_supply_cost": 89791.04
+          },
+          {
+            "order_date": "2024-05-29",
+            "total_supply_cost": 50008.68
+          },
+          {
+            "order_date": "2024-05-30",
+            "total_supply_cost": 35973.060000000005
+          },
+          {
+            "order_date": "2024-05-31",
+            "total_supply_cost": 14854.48
+          },
+          {
+            "order_date": "2024-06-01",
+            "total_supply_cost": 18932.51
+          },
+          {
+            "order_date": "2024-06-02",
+            "total_supply_cost": 41798.47
+          },
+          {
+            "order_date": "2024-06-03",
+            "total_supply_cost": 20354.43
+          },
+          {
+            "order_date": "2024-06-04",
+            "total_supply_cost": 12650.96
+          },
+          {
+            "order_date": "2024-06-05",
+            "total_supply_cost": 25821.62
+          },
+          {
+            "order_date": "2024-06-06",
+            "total_supply_cost": 3991.8100000000004
+          },
+          {
+            "order_date": "2024-06-07",
+            "total_supply_cost": 30183.77
+          },
+          {
+            "order_date": "2024-06-08",
+            "total_supply_cost": 46001.69
+          },
+          {
+            "order_date": "2024-06-09",
+            "total_supply_cost": 56486.37
+          },
+          {
+            "order_date": "2024-06-10",
+            "total_supply_cost": 105811.31
+          },
+          {
+            "order_date": "2024-06-11",
+            "total_supply_cost": 85817.19
+          },
+          {
+            "order_date": "2024-06-12",
+            "total_supply_cost": 36800.57
+          },
+          {
+            "order_date": "2024-06-13",
+            "total_supply_cost": 38463.53999999999
+          },
+          {
+            "order_date": "2024-06-14",
+            "total_supply_cost": 9354.710000000001
+          },
+          {
+            "order_date": "2024-06-15",
+            "total_supply_cost": 38807.14
+          },
+          {
+            "order_date": "2024-06-16",
+            "total_supply_cost": 65791.66
+          },
+          {
+            "order_date": "2024-06-17",
+            "total_supply_cost": 22794.38
+          },
+          {
+            "order_date": "2024-06-18",
+            "total_supply_cost": 44293.14
+          },
+          {
+            "order_date": "2024-06-19",
+            "total_supply_cost": 26654.870000000003
+          },
+          {
+            "order_date": "2024-06-20",
+            "total_supply_cost": 6718.12
+          },
+          {
+            "order_date": "2024-06-21",
+            "total_supply_cost": 20173.940000000002
+          },
+          {
+            "order_date": "2024-06-22",
+            "total_supply_cost": 87834.95
+          },
+          {
+            "order_date": "2024-06-23",
+            "total_supply_cost": 16397.3
+          },
+          {
+            "order_date": "2024-06-24",
+            "total_supply_cost": 30604.84
+          },
+          {
+            "order_date": "2024-06-25",
+            "total_supply_cost": 36583.71
+          },
+          {
+            "order_date": "2024-06-26",
+            "total_supply_cost": 37036.020000000004
+          },
+          {
+            "order_date": "2024-06-27",
+            "total_supply_cost": 82885.83
+          },
+          {
+            "order_date": "2024-06-28",
+            "total_supply_cost": 8499.369999999999
+          },
+          {
+            "order_date": "2024-06-29",
+            "total_supply_cost": 55033.07
+          },
+          {
+            "order_date": "2024-06-30",
+            "total_supply_cost": 34646.31
+          },
+          {
+            "order_date": "2024-07-01",
+            "total_supply_cost": 52367.88
+          },
+          {
+            "order_date": "2024-07-02",
+            "total_supply_cost": 112974.54
+          },
+          {
+            "order_date": "2024-07-03",
+            "total_supply_cost": 42635.92
+          },
+          {
+            "order_date": "2024-07-04",
+            "total_supply_cost": 10703.960000000001
+          },
+          {
+            "order_date": "2024-07-05",
+            "total_supply_cost": 117516.12
+          },
+          {
+            "order_date": "2024-07-06",
+            "total_supply_cost": 39728.54
+          },
+          {
+            "order_date": "2024-07-07",
+            "total_supply_cost": 18591.52
+          },
+          {
+            "order_date": "2024-07-08",
+            "total_supply_cost": 16737.350000000002
+          },
+          {
+            "order_date": "2024-07-09",
+            "total_supply_cost": 2803.86
+          },
+          {
+            "order_date": "2024-07-10",
+            "total_supply_cost": 12192.759999999998
+          },
+          {
+            "order_date": "2024-07-11",
+            "total_supply_cost": 70521.37
+          },
+          {
+            "order_date": "2024-07-12",
+            "total_supply_cost": 55201.21
+          },
+          {
+            "order_date": "2024-07-13",
+            "total_supply_cost": 50666.26
+          },
+          {
+            "order_date": "2024-07-14",
+            "total_supply_cost": 19576.82
+          },
+          {
+            "order_date": "2024-07-15",
+            "total_supply_cost": 84312.97
+          },
+          {
+            "order_date": "2024-07-16",
+            "total_supply_cost": 38610.89
+          },
+          {
+            "order_date": "2024-07-17",
+            "total_supply_cost": 9087.810000000001
+          },
+          {
+            "order_date": "2024-07-18",
+            "total_supply_cost": 2177.7599999999998
+          },
+          {
+            "order_date": "2024-07-19",
+            "total_supply_cost": 28804.36
+          },
+          {
+            "order_date": "2024-07-20",
+            "total_supply_cost": 5254.58
+          },
+          {
+            "order_date": "2024-07-21",
+            "total_supply_cost": 174706.14
+          },
+          {
+            "order_date": "2024-07-22",
+            "total_supply_cost": 4948.2300000000005
+          },
+          {
+            "order_date": "2024-07-23",
+            "total_supply_cost": 18393.16
+          },
+          {
+            "order_date": "2024-07-24",
+            "total_supply_cost": 58883.729999999996
+          },
+          {
+            "order_date": "2024-07-25",
+            "total_supply_cost": 18679.340000000004
+          },
+          {
+            "order_date": "2024-07-26",
+            "total_supply_cost": 29132.28
+          },
+          {
+            "order_date": "2024-07-27",
+            "total_supply_cost": 43650.100000000006
+          },
+          {
+            "order_date": "2024-07-28",
+            "total_supply_cost": 57103.880000000005
+          },
+          {
+            "order_date": "2024-07-29",
+            "total_supply_cost": 46659.5
+          },
+          {
+            "order_date": "2024-07-30",
+            "total_supply_cost": 64037.600000000006
+          },
+          {
+            "order_date": "2024-07-31",
+            "total_supply_cost": 31714.71
+          },
+          {
+            "order_date": "2024-08-01",
+            "total_supply_cost": 126094.39000000001
+          },
+          {
+            "order_date": "2024-08-02",
+            "total_supply_cost": 35839.73
+          },
+          {
+            "order_date": "2024-08-03",
+            "total_supply_cost": 39899.3
+          },
+          {
+            "order_date": "2024-08-04",
+            "total_supply_cost": 95285.11
+          },
+          {
+            "order_date": "2024-08-05",
+            "total_supply_cost": 65812.7
+          },
+          {
+            "order_date": "2024-08-06",
+            "total_supply_cost": 48153.41
+          },
+          {
+            "order_date": "2024-08-07",
+            "total_supply_cost": 95879.15
+          },
+          {
+            "order_date": "2024-08-08",
+            "total_supply_cost": 11750.55
+          },
+          {
+            "order_date": "2024-08-09",
+            "total_supply_cost": 51033.14
+          },
+          {
+            "order_date": "2024-08-10",
+            "total_supply_cost": 56848.89
+          },
+          {
+            "order_date": "2024-08-11",
+            "total_supply_cost": 93471.95
+          },
+          {
+            "order_date": "2024-08-12",
+            "total_supply_cost": 42913.9
+          },
+          {
+            "order_date": "2024-08-13",
+            "total_supply_cost": 19062.440000000002
+          },
+          {
+            "order_date": "2024-08-14",
+            "total_supply_cost": 42398.51
+          },
+          {
+            "order_date": "2024-08-15",
+            "total_supply_cost": 58456.32
+          },
+          {
+            "order_date": "2024-08-16",
+            "total_supply_cost": 66816.28
+          },
+          {
+            "order_date": "2024-08-17",
+            "total_supply_cost": 18486.33
+          },
+          {
+            "order_date": "2024-08-18",
+            "total_supply_cost": 43623.850000000006
+          },
+          {
+            "order_date": "2024-08-19",
+            "total_supply_cost": 16162.44
+          },
+          {
+            "order_date": "2024-08-20",
+            "total_supply_cost": 84362.73999999999
+          },
+          {
+            "order_date": "2024-08-21",
+            "total_supply_cost": 40162.560000000005
+          },
+          {
+            "order_date": "2024-08-22",
+            "total_supply_cost": 58614.87
+          },
+          {
+            "order_date": "2024-08-23",
+            "total_supply_cost": 112141.09
+          },
+          {
+            "order_date": "2024-08-24",
+            "total_supply_cost": 17279.77
+          },
+          {
+            "order_date": "2024-08-25",
+            "total_supply_cost": 47748.009999999995
+          },
+          {
+            "order_date": "2024-08-26",
+            "total_supply_cost": 38615.850000000006
+          },
+          {
+            "order_date": "2024-08-27",
+            "total_supply_cost": 34151.83000000001
+          },
+          {
+            "order_date": "2024-08-28",
+            "total_supply_cost": 166647.6
+          },
+          {
+            "order_date": "2024-08-29",
+            "total_supply_cost": 105909.02
+          },
+          {
+            "order_date": "2024-08-30",
+            "total_supply_cost": 22952.22
+          },
+          {
+            "order_date": "2024-08-31",
+            "total_supply_cost": 78380.6
+          },
+          {
+            "order_date": "2024-09-01",
+            "total_supply_cost": 34534.59
+          },
+          {
+            "order_date": "2024-09-02",
+            "total_supply_cost": 13111.429999999998
+          },
+          {
+            "order_date": "2024-09-03",
+            "total_supply_cost": 73934.86999999998
+          },
+          {
+            "order_date": "2024-09-04",
+            "total_supply_cost": 62474.67
+          },
+          {
+            "order_date": "2024-09-05",
+            "total_supply_cost": 146090.37
+          },
+          {
+            "order_date": "2024-09-06",
+            "total_supply_cost": 6907.779999999999
+          },
+          {
+            "order_date": "2024-09-07",
+            "total_supply_cost": 38729.009999999995
+          },
+          {
+            "order_date": "2024-09-08",
+            "total_supply_cost": 52490.29000000001
+          },
+          {
+            "order_date": "2024-09-09",
+            "total_supply_cost": 14882.23
+          },
+          {
+            "order_date": "2024-09-10",
+            "total_supply_cost": 48833.87
+          },
+          {
+            "order_date": "2024-09-11",
+            "total_supply_cost": 42937.08
+          },
+          {
+            "order_date": "2024-09-12",
+            "total_supply_cost": 36363.57
+          },
+          {
+            "order_date": "2024-09-13",
+            "total_supply_cost": 17856.46
+          },
+          {
+            "order_date": "2024-09-14",
+            "total_supply_cost": 10798.48
+          },
+          {
+            "order_date": "2024-09-15",
+            "total_supply_cost": 2878.4
+          },
+          {
+            "order_date": "2024-09-16",
+            "total_supply_cost": 142211.25
+          },
+          {
+            "order_date": "2024-09-17",
+            "total_supply_cost": 61037.25
+          },
+          {
+            "order_date": "2024-09-18",
+            "total_supply_cost": 10537.9
+          },
+          {
+            "order_date": "2024-09-19",
+            "total_supply_cost": 98604.5
+          },
+          {
+            "order_date": "2024-09-20",
+            "total_supply_cost": 31379.11
+          },
+          {
+            "order_date": "2024-09-21",
+            "total_supply_cost": 11377.279999999999
+          },
+          {
+            "order_date": "2024-09-22",
+            "total_supply_cost": 5882.990000000001
+          },
+          {
+            "order_date": "2024-09-23",
+            "total_supply_cost": 27209.88
+          },
+          {
+            "order_date": "2024-09-24",
+            "total_supply_cost": 110930.90000000002
+          },
+          {
+            "order_date": "2024-09-25",
+            "total_supply_cost": 2257.21
+          },
+          {
+            "order_date": "2024-09-26",
+            "total_supply_cost": 91812.96
+          },
+          {
+            "order_date": "2024-09-27",
+            "total_supply_cost": 23938.96
+          },
+          {
+            "order_date": "2024-09-28",
+            "total_supply_cost": 5760.29
+          },
+          {
+            "order_date": "2024-09-29",
+            "total_supply_cost": 32992.4
+          },
+          {
+            "order_date": "2024-09-30",
+            "total_supply_cost": 42112.130000000005
+          },
+          {
+            "order_date": "2024-10-01",
+            "total_supply_cost": 19404.949999999997
+          },
+          {
+            "order_date": "2024-10-02",
+            "total_supply_cost": 69645.44
+          },
+          {
+            "order_date": "2024-10-03",
+            "total_supply_cost": 28537.37
+          },
+          {
+            "order_date": "2024-10-04",
+            "total_supply_cost": 39869.130000000005
+          },
+          {
+            "order_date": "2024-10-05",
+            "total_supply_cost": 48641.130000000005
+          },
+          {
+            "order_date": "2024-10-06",
+            "total_supply_cost": 43574.76
+          },
+          {
+            "order_date": "2024-10-07",
+            "total_supply_cost": 29323.07
+          },
+          {
+            "order_date": "2024-10-08",
+            "total_supply_cost": 108766.74
+          },
+          {
+            "order_date": "2024-10-09",
+            "total_supply_cost": 17345.88
+          },
+          {
+            "order_date": "2024-10-10",
+            "total_supply_cost": 77445.70000000001
+          },
+          {
+            "order_date": "2024-10-11",
+            "total_supply_cost": 40749.530000000006
+          },
+          {
+            "order_date": "2024-10-12",
+            "total_supply_cost": 36488.17
+          },
+          {
+            "order_date": "2024-10-13",
+            "total_supply_cost": 141367.33
+          },
+          {
+            "order_date": "2024-10-14",
+            "total_supply_cost": 15405.150000000001
+          },
+          {
+            "order_date": "2024-10-15",
+            "total_supply_cost": 41034.56
+          },
+          {
+            "order_date": "2024-10-16",
+            "total_supply_cost": 68145.21
+          },
+          {
+            "order_date": "2024-10-17",
+            "total_supply_cost": 5227.67
+          },
+          {
+            "order_date": "2024-10-18",
+            "total_supply_cost": 11061.519999999999
+          },
+          {
+            "order_date": "2024-10-19",
+            "total_supply_cost": 70888.37
+          },
+          {
+            "order_date": "2024-10-20",
+            "total_supply_cost": 17200.74
+          },
+          {
+            "order_date": "2024-10-21",
+            "total_supply_cost": 91540.11
+          },
+          {
+            "order_date": "2024-10-22",
+            "total_supply_cost": 6361.26
+          },
+          {
+            "order_date": "2024-10-23",
+            "total_supply_cost": 67576.09999999999
+          },
+          {
+            "order_date": "2024-10-24",
+            "total_supply_cost": 12525.71
+          },
+          {
+            "order_date": "2024-10-25",
+            "total_supply_cost": 70669.2
+          },
+          {
+            "order_date": "2024-10-26",
+            "total_supply_cost": 37962.92999999999
+          },
+          {
+            "order_date": "2024-10-27",
+            "total_supply_cost": 106850.68
+          },
+          {
+            "order_date": "2024-10-28",
+            "total_supply_cost": 31656.87
+          },
+          {
+            "order_date": "2024-10-29",
+            "total_supply_cost": 48572.200000000004
+          },
+          {
+            "order_date": "2024-10-30",
+            "total_supply_cost": 59842.62
+          },
+          {
+            "order_date": "2024-10-31",
+            "total_supply_cost": 83181.45000000001
+          },
+          {
+            "order_date": "2024-11-01",
+            "total_supply_cost": 168684.43
+          },
+          {
+            "order_date": "2024-11-02",
+            "total_supply_cost": 52814.13
+          },
+          {
+            "order_date": "2024-11-03",
+            "total_supply_cost": 5639.1
+          },
+          {
+            "order_date": "2024-11-04",
+            "total_supply_cost": 64015.89000000001
+          },
+          {
+            "order_date": "2024-11-05",
+            "total_supply_cost": 13353.02
+          },
+          {
+            "order_date": "2024-11-06",
+            "total_supply_cost": 66030.09
+          },
+          {
+            "order_date": "2024-11-07",
+            "total_supply_cost": 11701.84
+          },
+          {
+            "order_date": "2024-11-08",
+            "total_supply_cost": 60795.55
+          },
+          {
+            "order_date": "2024-11-09",
+            "total_supply_cost": 109076.83
+          },
+          {
+            "order_date": "2024-11-10",
+            "total_supply_cost": 2581.27
+          },
+          {
+            "order_date": "2024-11-11",
+            "total_supply_cost": 31366.239999999998
+          },
+          {
+            "order_date": "2024-11-12",
+            "total_supply_cost": 94358.49000000002
+          },
+          {
+            "order_date": "2024-11-13",
+            "total_supply_cost": 16829.620000000003
+          },
+          {
+            "order_date": "2024-11-14",
+            "total_supply_cost": 28453.01
+          },
+          {
+            "order_date": "2024-11-15",
+            "total_supply_cost": 110776.23000000001
+          },
+          {
+            "order_date": "2024-11-16",
+            "total_supply_cost": 70150.05000000002
+          },
+          {
+            "order_date": "2024-11-17",
+            "total_supply_cost": 82492.02
+          },
+          {
+            "order_date": "2024-11-18",
+            "total_supply_cost": 8692.31
+          },
+          {
+            "order_date": "2024-11-19",
+            "total_supply_cost": 7358.4400000000005
+          },
+          {
+            "order_date": "2024-11-20",
+            "total_supply_cost": 4092.8100000000004
+          },
+          {
+            "order_date": "2024-11-21",
+            "total_supply_cost": 26313.57
+          },
+          {
+            "order_date": "2024-11-22",
+            "total_supply_cost": 10092.18
+          },
+          {
+            "order_date": "2024-11-23",
+            "total_supply_cost": 13492.57
+          },
+          {
+            "order_date": "2024-11-24",
+            "total_supply_cost": 50945.41
+          },
+          {
+            "order_date": "2024-11-25",
+            "total_supply_cost": 84965.35
+          },
+          {
+            "order_date": "2024-11-26",
+            "total_supply_cost": 13379.01
+          },
+          {
+            "order_date": "2024-11-27",
+            "total_supply_cost": 96496.59000000001
+          },
+          {
+            "order_date": "2024-11-28",
+            "total_supply_cost": 13893.590000000002
+          },
+          {
+            "order_date": "2024-11-29",
+            "total_supply_cost": 91863.59
+          },
+          {
+            "order_date": "2024-11-30",
+            "total_supply_cost": 45922.08
+          },
+          {
+            "order_date": "2024-12-01",
+            "total_supply_cost": 61873.01
+          },
+          {
+            "order_date": "2024-12-02",
+            "total_supply_cost": 76266.40999999999
+          },
+          {
+            "order_date": "2024-12-03",
+            "total_supply_cost": 98740.0
+          },
+          {
+            "order_date": "2024-12-04",
+            "total_supply_cost": 22346.08
+          },
+          {
+            "order_date": "2024-12-05",
+            "total_supply_cost": 7038.379999999999
+          },
+          {
+            "order_date": "2024-12-06",
+            "total_supply_cost": 93598.96
+          },
+          {
+            "order_date": "2024-12-07",
+            "total_supply_cost": 30539.26
+          },
+          {
+            "order_date": "2024-12-08",
+            "total_supply_cost": 18338.3
+          },
+          {
+            "order_date": "2024-12-09",
+            "total_supply_cost": 124113.53000000003
+          },
+          {
+            "order_date": "2024-12-10",
+            "total_supply_cost": 50484.58
+          },
+          {
+            "order_date": "2024-12-11",
+            "total_supply_cost": 86975.17
+          },
+          {
+            "order_date": "2024-12-12",
+            "total_supply_cost": 81195.98000000001
+          },
+          {
+            "order_date": "2024-12-13",
+            "total_supply_cost": 46122.43
+          },
+          {
+            "order_date": "2024-12-14",
+            "total_supply_cost": 22006.93
+          },
+          {
+            "order_date": "2024-12-15",
+            "total_supply_cost": 26866.460000000003
+          },
+          {
+            "order_date": "2024-12-16",
+            "total_supply_cost": 52178.77
+          },
+          {
+            "order_date": "2024-12-17",
+            "total_supply_cost": 35885.58
+          },
+          {
+            "order_date": "2024-12-18",
+            "total_supply_cost": 6377.89
+          },
+          {
+            "order_date": "2024-12-19",
+            "total_supply_cost": 46338.69
+          },
+          {
+            "order_date": "2024-12-20",
+            "total_supply_cost": 58188.369999999995
+          },
+          {
+            "order_date": "2024-12-21",
+            "total_supply_cost": 54807.43
+          },
+          {
+            "order_date": "2024-12-22",
+            "total_supply_cost": 37341.990000000005
+          },
+          {
+            "order_date": "2024-12-23",
+            "total_supply_cost": 98104.31999999999
+          },
+          {
+            "order_date": "2024-12-24",
+            "total_supply_cost": 44889.64
+          },
+          {
+            "order_date": "2024-12-25",
+            "total_supply_cost": 98643.34
+          },
+          {
+            "order_date": "2024-12-26",
+            "total_supply_cost": 34938.15000000001
+          },
+          {
+            "order_date": "2024-12-27",
+            "total_supply_cost": 32512.449999999997
+          },
+          {
+            "order_date": "2024-12-28",
+            "total_supply_cost": 169351.68
+          },
+          {
+            "order_date": "2024-12-29",
+            "total_supply_cost": 19776.550000000003
+          },
+          {
+            "order_date": "2024-12-30",
+            "total_supply_cost": 16932.030000000002
+          }
+        ],
+        "row_count": 365
+      },
+      "bar_defect_rate_by_supplier": {
+        "status": "success",
+        "data": [
+          {
+            "supplier": "Acme Corp",
+            "avg_defect_rate": 2.6065961538461546
+          },
+          {
+            "supplier": "Global Parts Ltd",
+            "avg_defect_rate": 2.4798407079646014
+          },
+          {
+            "supplier": "Superior Materials",
+            "avg_defect_rate": 2.4362358490566036
+          },
+          {
+            "supplier": "Reliable Suppliers Co",
+            "avg_defect_rate": 2.309682692307692
+          },
+          {
+            "supplier": "BuildRight Inc",
+            "avg_defect_rate": 2.294945205479452
+          }
+        ],
+        "row_count": 5
+      },
+      "table_customers_overview": {
+        "status": "success",
+        "data": [
+          {
+            "customer_id": "CUST-012",
+            "customer_name": "SmartHome Inc",
+            "industry": "Consumer Electronics",
+            "company_size": "Medium",
+            "revenue_category": "$10M-$50M",
+            "region": "Asia Pacific",
+            "satisfaction_score": 4.8,
+            "last_order_date": "2024-02-21"
+          },
+          {
+            "customer_id": "CUST-003",
+            "customer_name": "GlobalTrade Co",
+            "industry": "Retail",
+            "company_size": "Large",
+            "revenue_category": "$100M+",
+            "region": "Asia Pacific",
+            "satisfaction_score": 4.2,
+            "last_order_date": "2024-02-20"
+          },
+          {
+            "customer_id": "CUST-015",
+            "customer_name": "PharmaLife",
+            "industry": "Pharmaceuticals",
+            "company_size": "Large",
+            "revenue_category": "$100M+",
+            "region": "Asia Pacific",
+            "satisfaction_score": 4.5,
+            "last_order_date": "2024-02-20"
+          },
+          {
+            "customer_id": "CUST-008",
+            "customer_name": "MediCare Plus",
+            "industry": "Healthcare",
+            "company_size": "Large",
+            "revenue_category": "$50M-$100M",
+            "region": "North America",
+            "satisfaction_score": 4.6,
+            "last_order_date": "2024-02-19"
+          },
+          {
+            "customer_id": "CUST-020",
+            "customer_name": "GreenEnergy Ltd",
+            "industry": "Renewable Energy",
+            "company_size": "Medium",
+            "revenue_category": "$10M-$50M",
+            "region": "Asia Pacific",
+            "satisfaction_score": 4.6,
+            "last_order_date": "2024-02-19"
+          },
+          {
+            "customer_id": "CUST-004",
+            "customer_name": "InnovateLabs",
+            "industry": "Healthcare",
+            "company_size": "Small",
+            "revenue_category": "$1M-$10M",
+            "region": "North America",
+            "satisfaction_score": 4.7,
+            "last_order_date": "2024-02-18"
+          },
+          {
+            "customer_id": "CUST-019",
+            "customer_name": "CloudServices Pro",
+            "industry": "IT Services",
+            "company_size": "Large",
+            "revenue_category": "$50M-$100M",
+            "region": "Africa",
+            "satisfaction_score": 4.4,
+            "last_order_date": "2024-02-18"
+          },
+          {
+            "customer_id": "CUST-010",
+            "customer_name": "FinTech Solutions",
+            "industry": "Financial Services",
+            "company_size": "Large",
+            "revenue_category": "$100M+",
+            "region": "Africa",
+            "satisfaction_score": 4.4,
+            "last_order_date": "2024-02-17"
+          },
+          {
+            "customer_id": "CUST-007",
+            "customer_name": "FoodChain Inc",
+            "industry": "Food & Beverage",
+            "company_size": "Medium",
+            "revenue_category": "$10M-$50M",
+            "region": "Asia Pacific",
+            "satisfaction_score": 4.3,
+            "last_order_date": "2024-02-16"
+          },
+          {
+            "customer_id": "CUST-016",
+            "customer_name": "EduLearn Academy",
+            "industry": "Education",
+            "company_size": "Small",
+            "revenue_category": "$1M-$10M",
+            "region": "North America",
+            "satisfaction_score": 4.3,
+            "last_order_date": "2024-02-16"
+          },
+          {
+            "customer_id": "CUST-001",
+            "customer_name": "TechCorp Inc",
+            "industry": "Technology",
+            "company_size": "Large",
+            "revenue_category": "$50M-$100M",
+            "region": "North America",
+            "satisfaction_score": 4.5,
+            "last_order_date": "2024-02-15"
+          },
+          {
+            "customer_id": "CUST-014",
+            "customer_name": "TextilePlus",
+            "industry": "Manufacturing",
+            "company_size": "Medium",
+            "revenue_category": "$10M-$50M",
+            "region": "Europe",
+            "satisfaction_score": 4.2,
+            "last_order_date": "2024-02-15"
+          },
+          {
+            "customer_id": "CUST-006",
+            "customer_name": "EcoEnergy Corp",
+            "industry": "Energy",
+            "company_size": "Large",
+            "revenue_category": "$100M+",
+            "region": "Latin America",
+            "satisfaction_score": 4.1,
+            "last_order_date": "2024-02-14"
+          },
+          {
+            "customer_id": "CUST-018",
+            "customer_name": "RetailMax",
+            "industry": "Sports & Recreation",
+            "company_size": "Medium",
+            "revenue_category": "$10M-$50M",
+            "region": "Latin America",
+            "satisfaction_score": 4.1,
+            "last_order_date": "2024-02-14"
+          },
+          {
+            "customer_id": "CUST-011",
+            "customer_name": "AgriTech Farms",
+            "industry": "Agriculture",
+            "company_size": "Small",
+            "revenue_category": "$1M-$10M",
+            "region": "Latin America",
+            "satisfaction_score": 4.0,
+            "last_order_date": "2024-02-13"
+          },
+          {
+            "customer_id": "CUST-005",
+            "customer_name": "MetroLogistics",
+            "industry": "Transportation",
+            "company_size": "Medium",
+            "revenue_category": "$10M-$50M",
+            "region": "Europe",
+            "satisfaction_score": 3.9,
+            "last_order_date": "2024-02-12"
+          },
+          {
+            "customer_id": "CUST-017",
+            "customer_name": "DefenseTech Inc",
+            "industry": "Defense",
+            "company_size": "Large",
+            "revenue_category": "$100M+",
+            "region": "Europe",
+            "satisfaction_score": 3.9,
+            "last_order_date": "2024-02-12"
+          },
+          {
+            "customer_id": "CUST-009",
+            "customer_name": "AutoParts Pro",
+            "industry": "Automotive",
+            "company_size": "Medium",
+            "revenue_category": "$10M-$50M",
+            "region": "Europe",
+            "satisfaction_score": 3.7,
+            "last_order_date": "2024-02-11"
+          },
+          {
+            "customer_id": "CUST-002",
+            "customer_name": "BuildWell Ltd",
+            "industry": "Construction",
+            "company_size": "Medium",
+            "revenue_category": "$10M-$50M",
+            "region": "Europe",
+            "satisfaction_score": 3.8,
+            "last_order_date": "2024-02-10"
+          },
+          {
+            "customer_id": "CUST-013",
+            "customer_name": "ChemicalWorks",
+            "industry": "Chemicals",
+            "company_size": "Large",
+            "revenue_category": "$50M-$100M",
+            "region": "North America",
+            "satisfaction_score": 3.6,
+            "last_order_date": "2024-02-09"
+          }
+        ],
+        "row_count": 20
+      }
+    },
+    "validation": {
+      "overall_status": "success",
+      "components": [
+        {
+          "id": "kpi_total_apps",
+          "title": "Total Apps Profiled",
+          "type": "kpi_card",
+          "status": "success",
+          "warnings": [],
+          "explanation": "Total Apps Profiled: Displays a single metric value (1 data point)"
+        },
+        {
+          "id": "kpi_avg_sdk_risk",
+          "title": "Average SDK Risk Score",
+          "type": "kpi_card",
+          "status": "success",
+          "warnings": [],
+          "explanation": "Average SDK Risk Score: Displays a single metric value (1 data point)"
+        },
+        {
+          "id": "bar_apps_by_category",
+          "title": "Apps by Category (Binned)",
+          "type": "bar_chart",
+          "status": "success",
+          "warnings": [],
+          "explanation": "Apps by Category (Binned): Compares 8 categories"
+        },
+        {
+          "id": "table_top_risky_apps",
+          "title": "Top Apps by Company Risk Score",
+          "type": "table",
+          "status": "success",
+          "warnings": [],
+          "explanation": "Top Apps by Company Risk Score: Shows 50 rows across 6 columns"
+        },
+        {
+          "id": "line_supply_cost_over_time",
+          "title": "Total Supply Chain Cost Over Time",
+          "type": "line_chart",
+          "status": "success",
+          "warnings": [],
+          "explanation": "Total Supply Chain Cost Over Time: Shows trend across 365 time points"
+        },
+        {
+          "id": "bar_defect_rate_by_supplier",
+          "title": "Average Defect Rate by Supplier",
+          "type": "bar_chart",
+          "status": "success",
+          "warnings": [],
+          "explanation": "Average Defect Rate by Supplier: Compares 5 categories"
+        },
+        {
+          "id": "table_customers_overview",
+          "title": "Customer Segments Overview",
+          "type": "table",
+          "status": "success",
+          "warnings": [],
+          "explanation": "Customer Segments Overview: Shows 20 rows across 8 columns"
+        }
+      ],
+      "total_warnings": 0
+    },
+    "governance": {
+      "overall_status": "warning",
+      "passed": true,
+      "role": "admin",
+      "role_display_name": "Administrator",
+      "checks": [
+        {
+          "name": "sql_sanitization",
+          "status": "pass",
+          "details": "All queries passed sanitization"
+        },
+        {
+          "name": "column_access",
+          "status": "pass",
+          "details": "All columns accessible"
+        },
+        {
+          "name": "component_permissions",
+          "status": "pass",
+          "details": "All component types allowed"
+        },
+        {
+          "name": "pii_detection",
+          "status": "pass",
+          "details": "No PII detected"
+        },
+        {
+          "name": "access_control",
+          "status": "pass",
+          "details": "Role 'admin' granted create_app"
+        },
+        {
+          "name": "query_complexity",
+          "status": "pass",
+          "details": "Analyzed 7 queries"
+        },
+        {
+          "name": "data_quality",
+          "status": "warning",
+          "details": "poor"
+        },
+        {
+          "name": "export_control",
+          "status": "pass",
+          "details": "450 rows (limit: None)"
+        }
+      ],
+      "sql_safety": {
+        "safe": true,
+        "blocked_keywords": [],
+        "query_length_ok": true,
+        "details": ""
+      },
+      "column_access": {
+        "allowed": true,
+        "blocked_columns": [],
+        "column_details": [
+          {
+            "column": "category",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "order_date",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "total_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "shipping_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "warehouse_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "defect_rate",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "supplier",
+            "sensitivity": "restricted",
+            "allowed": true
+          },
+          {
+            "column": "region",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "customer_id",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "customer_name",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "industry",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "company_size",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "last_order_date",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "revenue_category",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "satisfaction_score",
+            "sensitivity": "internal",
+            "allowed": true
+          }
+        ],
+        "redaction_needed": false
+      },
+      "component_permissions": {
+        "allowed": true,
+        "blocked_components": [],
+        "component_count_ok": true,
+        "max_allowed": 15
+      },
+      "pii_detected": [],
+      "pii_redacted": false,
+      "access_granted": true,
+      "query_complexity": {
+        "kpi_total_apps": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "kpi_avg_sdk_risk": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "bar_apps_by_category": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "table_top_risky_apps": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": false,
+          "is_complex": false
+        },
+        "line_supply_cost_over_time": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "bar_defect_rate_by_supplier": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "table_customers_overview": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": false,
+          "is_complex": false
+        }
+      },
+      "data_quality": {
+        "overall_quality": "poor",
+        "null_count": 0,
+        "duplicate_count": 0,
+        "outlier_count": 6,
+        "issues": [
+          "table_top_risky_apps: 1 outliers",
+          "line_supply_cost_over_time: 5 outliers"
+        ],
+        "per_component": {
+          "kpi_total_apps": {
+            "null_count": 0,
+            "duplicate_count": 0,
+            "outlier_count": 0,
+            "quality": "good"
+          },
+          "kpi_avg_sdk_risk": {
+            "null_count": 0,
+            "duplicate_count": 0,
+            "outlier_count": 0,
+            "quality": "good"
+          },
+          "bar_apps_by_category": {
+            "null_count": 0,
+            "duplicate_count": 0,
+            "outlier_count": 0,
+            "quality": "good"
+          },
+          "table_top_risky_apps": {
+            "null_count": 0,
+            "duplicate_count": 0,
+            "outlier_count": 1,
+            "quality": "warning"
+          },
+          "line_supply_cost_over_time": {
+            "null_count": 0,
+            "duplicate_count": 0,
+            "outlier_count": 5,
+            "quality": "warning"
+          },
+          "bar_defect_rate_by_supplier": {
+            "null_count": 0,
+            "duplicate_count": 0,
+            "outlier_count": 0,
+            "quality": "good"
+          },
+          "table_customers_overview": {
+            "null_count": 0,
+            "duplicate_count": 0,
+            "outlier_count": 0,
+            "quality": "good"
+          }
+        }
+      },
+      "export_allowed": true,
+      "export_formats": [
+        "csv",
+        "json",
+        "pdf"
+      ],
+      "warnings": [
+        "Poor data quality: ['table_top_risky_apps: 1 outliers', 'line_supply_cost_over_time: 5 outliers']"
+      ],
+      "blocked_reasons": [],
+      "audit_entry_id": "a62728aa"
+    },
+    "overview": {
+      "summary": "This dashboard gives you a high-level view of three areas in your dataset: app privacy risk, customer segments, and supply chain performance. You can see how many apps are being monitored and how risky they are on average, which categories dominate, and which specific apps and companies carry the highest risk. At the same time, you get a daily view of total supply chain costs and how supplier defect rates compare, alongside a snapshot of key customer profiles and satisfaction. Together, this lets you quickly understand the scale, risk profile, and operational context captured in the data.",
+      "components": [
+        {
+          "id": "kpi_total_apps",
+          "title": "Total Apps Profiled",
+          "narration": "This KPI shows that you have 1,694 apps in scope, giving you a sense of the overall size of the app dataset being monitored for privacy and risk. It sets the baseline for interpreting all other app-related metrics."
+        },
+        {
+          "id": "kpi_avg_sdk_risk",
+          "title": "Average SDK Risk Score",
+          "narration": "This KPI indicates that, on average, apps have an SDK risk score of about 20.4, summarizing the typical third-party SDK risk level across your portfolio. You can use this as a benchmark to spot apps that are significantly above or below the norm."
+        },
+        {
+          "id": "bar_apps_by_category",
+          "title": "Apps by Category (Binned)",
+          "narration": "This chart shows how your 1,694 apps are distributed across categories, with Edtech dominating at 940 apps and the next largest groups being Other (175), Health & Fitness (132), Education (117), and Books (108). It helps you see where most of your app risk and analysis effort is likely concentrated by category."
+        },
+        {
+          "id": "table_top_risky_apps",
+          "title": "Top Apps by Company Risk Score",
+          "narration": "This table lists the 50 apps with the highest company risk scores, highlighting examples like Palm Beach County School Dist (Intrado Corporation) with a score of 509 and several high-risk Edtech and News & Magazines apps. You can see both SDK and permissions risk components, which helps you pinpoint which apps and vendors warrant immediate review."
+        },
+        {
+          "id": "line_supply_cost_over_time",
+          "title": "Total Supply Chain Cost Over Time",
+          "narration": "This line chart tracks your total supply chain cost by day, with sample values ranging from about $9,908 on 2024-01-04 to around $65,977 on 2024-01-02. It lets you see cost volatility and trends over the year so you can spot spikes, seasonality, or anomalies in operational spending."
+        },
+        {
+          "id": "bar_defect_rate_by_supplier",
+          "title": "Average Defect Rate by Supplier",
+          "narration": "This chart compares average defect rates across key suppliers, showing that Acme Corp has the highest sample defect rate at about 2.61%, while BuildRight Inc is lowest at roughly 2.29%. It helps you quickly identify which suppliers are relatively more or less reliable in terms of quality."
+        },
+        {
+          "id": "table_customers_overview",
+          "title": "Customer Segments Overview",
+          "narration": "This table gives you a segmented view of customers by industry, size, revenue band, region, satisfaction, and last order date, such as SmartHome Inc (medium, $10M\u2013$50M, Asia Pacific) with a satisfaction score of 4.8. You can use it to understand who your key customers are, where they operate, and how recently and happily they are engaging with you."
+        }
+      ]
+    }
+  }
+}

@@ -3,7 +3,9 @@ duckdb==1.2.0
 pandas==2.2.0
 python-dotenv==1.0.0
 pydantic==2.5.0
-streamlit==1.40.0
+streamlit>=1.40.0
 plotly==5.24.0
 numpy==1.26.0
 requests==2.32.0
+streamlit-shadcn-ui>=0.1.19
+streamlit-antd-components>=0.3.2

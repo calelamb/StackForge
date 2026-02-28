@@ -528,56 +528,125 @@ def _render_inline_dashboard(result):
 
 
 def render_login_screen():
-    """Single centered login form."""
-    ROLE_OPTIONS = ["Administrator", "Data Analyst", "Viewer"]
+    """Premium login screen — shadcn select + button, CSS-styled password input."""
+    import streamlit_shadcn_ui as shadcn
+
+    # Data Analyst first so ui.select defaults to it
+    ROLE_OPTIONS = ["Data Analyst", "Administrator", "Viewer"]
     ROLE_KEY_MAP = {"Administrator": "admin", "Data Analyst": "analyst", "Viewer": "viewer"}
 
+    # ── Scoped CSS: only injected during login state ──
+    st.markdown("""<style>
+    /* Hide all chrome */
+    section[data-testid="stSidebar"],
+    [data-testid="stSidebarCollapsedControl"],
+    div[data-testid="stBottom"],
+    div[data-testid="stDecoration"],
+    header[data-testid="stHeader"],
+    #MainMenu, footer { display: none !important; }
+
+    /* Center the main block */
+    .stMainBlockContainer {
+        max-width: 440px !important;
+        margin: 0 auto !important;
+        padding-top: 10vh !important;
+    }
+
+    /* Password field (native st.text_input — aggressively restyled) */
+    .stTextInput input {
+        border-radius: 8px !important;
+        height: 40px !important;
+        font-size: 14px !important;
+        padding: 0 12px !important;
+        border: 1px solid #e5e7eb !important;
+        background: #ffffff !important;
+        color: #111111 !important;
+        font-family: 'Inter', -apple-system, sans-serif !important;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+    }
+    .stTextInput input:focus {
+        border-color: #111111 !important;
+        box-shadow: 0 0 0 3px rgba(0,0,0,0.06) !important;
+        outline: none !important;
+    }
+    .stTextInput input::placeholder { color: #9ca3af !important; }
+    .stTextInput label { display: none !important; }
+    .stTextInput button { display: none !important; }  /* hide password eye */
+    </style>""", unsafe_allow_html=True)
+
+    # ── Logo + wordmark ──
+    st.markdown("""
+    <div style="text-align:center;margin-bottom:32px">
+        <div style="width:48px;height:48px;background:#111111;border-radius:12px;
+                    display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="white" stroke-width="1.5"/>
+            </svg>
+        </div>
+        <div style="font-size:28px;font-weight:700;color:#111111;letter-spacing:-0.5px;
+                    font-family:'Inter',-apple-system,sans-serif">StackForge</div>
+        <div style="font-size:14px;color:#6b7280;margin-top:6px;
+                    font-family:'Inter',-apple-system,sans-serif">Sign in to continue</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Role — shadcn select ──
     st.markdown(
-        '<div class="login-title">'
-        '<h1><span class="t-stack">Stack</span><span class="t-forge">Forge</span></h1>'
-        '<p class="login-sub">Sign in to continue</p>'
-        "</div>",
+        '<p style="font-size:12px;font-weight:500;color:#6b7280;text-transform:uppercase;'
+        'letter-spacing:0.05em;margin:0 0 6px 2px;font-family:Inter,-apple-system,sans-serif">ROLE</p>',
+        unsafe_allow_html=True,
+    )
+    selected_display = shadcn.select(
+        options=ROLE_OPTIONS,
+        key="login_role_select",
+    )
+    role_key = ROLE_KEY_MAP.get(selected_display, "analyst")
+    st.markdown(
+        f'<p style="font-size:13px;color:#9ca3af;font-style:italic;margin:4px 0 20px 2px;'
+        f'line-height:1.4;font-family:Inter,-apple-system,sans-serif">{ROLE_DESC[role_key]}</p>',
         unsafe_allow_html=True,
     )
 
-    _, center, _ = st.columns([1.4, 1, 1.4])
-    with center:
-        selected_display = st.selectbox(
-            "Role",
-            options=ROLE_OPTIONS,
-            index=1,
-            key="login_role_select",
-            label_visibility="collapsed",
-        )
-        role_key = ROLE_KEY_MAP[selected_display]
+    # ── Password — native st.text_input (restyled via CSS above) ──
+    st.markdown(
+        '<p style="font-size:12px;font-weight:500;color:#6b7280;text-transform:uppercase;'
+        'letter-spacing:0.05em;margin:0 0 6px 2px;font-family:Inter,-apple-system,sans-serif">PASSWORD</p>',
+        unsafe_allow_html=True,
+    )
+    pwd = st.text_input(
+        "Password",
+        type="password",
+        key="login_pwd",
+        label_visibility="collapsed",
+        placeholder="Enter your password",
+    )
+    if st.session_state.get("login_error"):
         st.markdown(
-            f'<p style="font-size:12px;color:#6b7280;margin:-8px 0 12px 0">'
-            f"{ROLE_DESC[role_key]}</p>",
+            '<p style="color:#dc2626;font-size:12px;margin:6px 0 0 2px;'
+            'font-family:Inter,-apple-system,sans-serif">Incorrect password</p>',
             unsafe_allow_html=True,
         )
-        pwd = st.text_input(
-            "Password",
-            type="password",
-            key="login_pwd",
-            label_visibility="collapsed",
-            placeholder="Password",
-        )
-        if st.button("Sign in", key="login_btn", type="primary", use_container_width=True):
-            if pwd == PASSWORDS[role_key]:
-                st.session_state.logged_in = True
-                st.session_state.user_role = role_key
-                st.session_state.messages = []
-                st.session_state.pipeline_result = None
-                st.session_state.current_app = None
-                st.rerun()
-            else:
-                st.session_state.login_error = True
-                st.rerun()
-        if st.session_state.get("login_error"):
-            st.markdown(
-                '<p class="login-error">Incorrect password</p>',
-                unsafe_allow_html=True,
-            )
+
+    # ── Sign in — shadcn button ──
+    st.markdown('<div style="margin-top:12px"></div>', unsafe_allow_html=True)
+    if shadcn.button("Sign in", variant="default", key="login_btn"):
+        if pwd == PASSWORDS.get(role_key, ""):
+            st.session_state.logged_in = True
+            st.session_state.user_role = role_key
+            st.session_state.messages = []
+            st.session_state.pipeline_result = None
+            st.session_state.current_app = None
+            st.session_state.login_error = False
+            st.rerun()
+        else:
+            st.session_state.login_error = True
+            st.rerun()
+
+    st.markdown(
+        '<p style="text-align:center;color:#c0c0c0;font-size:12px;margin-top:32px;'
+        'font-family:Inter,-apple-system,sans-serif">StackForge v1.0 &middot; HackUSU 2026</p>',
+        unsafe_allow_html=True,
+    )
 
 
 # ============================================================================
@@ -607,9 +676,22 @@ def main():
 
     # ── SIDEBAR ──
     with st.sidebar:
-        st.markdown('<div class="sidebar-brand">StackForge</div>', unsafe_allow_html=True)
+        st.markdown('''
+        <div class="sidebar-brand">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="#111111" stroke-width="1.5"/>
+            </svg>StackForge
+        </div>
+        ''', unsafe_allow_html=True)
         role = st.session_state["user_role"]
-        st.caption(f"Signed in as **{ROLE_DISPLAY.get(role, role)}**")
+        role_colors = {"admin": "#111111", "analyst": "#3b82f6", "viewer": "#6b7280"}
+        badge_color = role_colors.get(role, "#6b7280")
+        st.markdown(
+            f'<div class="role-badge">'
+            f'<span class="role-dot" style="background:{badge_color}"></span>'
+            f'{ROLE_DISPLAY.get(role, role)}</div>',
+            unsafe_allow_html=True,
+        )
         if st.button("Sign out", key="logout_btn", use_container_width=True):
             st.session_state["logged_in"] = False
             st.session_state["user_role"] = None

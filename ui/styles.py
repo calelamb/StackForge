@@ -1,5 +1,5 @@
 """
-StackForge UI — Light theme, chat-centric layout.
+StackForge UI — Premium light theme.
 All CSS in one place. Called via inject_custom_css(st) at the top of app.py.
 """
 
@@ -13,6 +13,7 @@ CUSTOM_CSS = """
     --bg-card: #ffffff;
     --bg-hover: #f3f4f6;
     --border: #e5e7eb;
+    --border-subtle: #f0f0f0;
     --accent: #111111;
     --success: #16a34a;
     --warning: #d97706;
@@ -22,23 +23,58 @@ CUSTOM_CSS = """
     --text-tertiary: #9ca3af;
     --text-body: #374151;
     --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    --transition: 0.15s ease;
 }
 
-/* ── Global ── */
+/* ── Animation keyframes ── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ══════════════════════════════════════
+   GLOBAL RESETS
+   ══════════════════════════════════════ */
 html, body, .stApp, [data-testid="stAppViewContainer"],
 [data-testid="stAppViewBlockContainer"] {
     background-color: var(--bg-page) !important;
     color: var(--text-primary) !important;
     font-family: var(--font) !important;
 }
-#MainMenu, footer, header[data-testid="stHeader"] { visibility: hidden; }
-[data-testid="stHeader"] { background-color: var(--bg-page) !important; }
+
+/* Hide ALL Streamlit chrome */
+#MainMenu,
+footer,
+header[data-testid="stHeader"],
+div[data-testid="stDecoration"],
+div[data-testid="stToolbar"],
+.reportview-container .main footer {
+    display: none !important;
+}
+
+[data-testid="stHeader"] { background-color: var(--bg-page) !important; height: 0 !important; }
 [data-testid="stMain"] > div { background-color: var(--bg-page) !important; }
-h1, h2, h3, h4, h5, h6 { color: var(--text-primary) !important; font-family: var(--font) !important; }
-p, span, label, li, div { font-family: var(--font) !important; }
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+    font-family: var(--font) !important;
+}
+p, span, label, li, div {
+    font-family: var(--font) !important;
+}
 
 /* ══════════════════════════════════════
-   SIDEBAR (260px control panel)
+   SIDEBAR
    ══════════════════════════════════════ */
 section[data-testid="stSidebar"] {
     background-color: var(--bg-sidebar) !important;
@@ -48,8 +84,8 @@ section[data-testid="stSidebar"] {
 }
 section[data-testid="stSidebar"] > div {
     background-color: var(--bg-sidebar) !important;
-    padding-top: 12px !important;
-    padding-bottom: 40px !important;
+    padding-top: 16px !important;
+    padding-bottom: 48px !important;
 }
 section[data-testid="stSidebar"] .stMarkdown p,
 section[data-testid="stSidebar"] .stMarkdown span,
@@ -58,22 +94,23 @@ section[data-testid="stSidebar"] label {
     font-family: var(--font) !important;
 }
 
-/* ── Sidebar template buttons ── */
+/* Sidebar template buttons — look like nav items */
 section[data-testid="stSidebar"] .stButton > button {
     background-color: transparent !important;
     border: none !important;
     color: var(--text-body) !important;
-    border-radius: 6px !important;
+    border-radius: var(--radius-sm) !important;
     font-family: var(--font) !important;
     font-weight: 400 !important;
     font-size: 13px !important;
-    padding: 5px 10px !important;
+    padding: 6px 10px !important;
     text-align: left !important;
     justify-content: flex-start !important;
-    transition: background-color 0.1s ease !important;
+    transition: background-color var(--transition), color var(--transition) !important;
     transform: none !important;
     box-shadow: none !important;
-    min-height: 30px !important;
+    min-height: 32px !important;
+    line-height: 1.4 !important;
 }
 section[data-testid="stSidebar"] .stButton > button:hover {
     background-color: var(--bg-hover) !important;
@@ -82,67 +119,132 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     box-shadow: none !important;
 }
 
-/* ── Engine toggle ── */
+/* Engine toggle */
 [data-testid="stToggle"] label span {
     color: var(--text-secondary) !important;
     font-size: 12px !important;
+}
+
+/* Sidebar brand */
+.sidebar-brand {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-primary);
+    font-family: var(--font);
+    padding: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: -0.3px;
+}
+
+.section-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 500;
+    font-family: var(--font);
+    margin-bottom: 4px;
+}
+
+.sidebar-footer {
+    position: fixed;
+    bottom: 0;
+    width: 260px;
+    padding: 10px 12px;
+    background-color: var(--bg-sidebar);
+    border-top: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-align: center;
+    font-family: var(--font);
+}
+
+/* Role badge in sidebar */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 0 8px 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: var(--font);
+}
+.role-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
 }
 
 /* ══════════════════════════════════════
    BUTTONS
    ══════════════════════════════════════ */
 
-/* Default: text-link style (for "Try" and other inline actions) */
+/* Default: ghost / text-link style */
 .stButton > button {
     background-color: transparent !important;
     color: var(--text-secondary) !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: var(--radius-md) !important;
     font-family: var(--font) !important;
     font-weight: 400 !important;
     font-size: 13px !important;
     padding: 4px 8px !important;
-    transition: color 0.1s ease !important;
+    transition: color var(--transition), background-color var(--transition) !important;
     transform: none !important;
     box-shadow: none !important;
 }
 .stButton > button:hover {
     color: var(--text-primary) !important;
-    background-color: transparent !important;
+    background-color: var(--bg-hover) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+.stButton > button:active {
     transform: none !important;
     box-shadow: none !important;
 }
 
-/* Primary: black filled (for login, CTAs) */
+/* Primary: solid dark (login, CTAs) */
 [data-testid="baseButton-primary"] {
     background-color: var(--accent) !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: var(--radius-md) !important;
     font-family: var(--font) !important;
     font-weight: 500 !important;
-    font-size: 13px !important;
-    padding: 8px 20px !important;
-    transition: background-color 0.1s ease !important;
+    font-size: 14px !important;
+    padding: 10px 24px !important;
+    transition: background-color var(--transition), transform 0.1s ease !important;
+    box-shadow: none !important;
 }
 [data-testid="baseButton-primary"]:hover {
-    background-color: #374151 !important;
+    background-color: #333333 !important;
+}
+[data-testid="baseButton-primary"]:active {
+    background-color: #000000 !important;
+    transform: scale(0.98) !important;
 }
 
 /* ══════════════════════════════════════
-   CHAT MESSAGES (center area)
+   CHAT MESSAGES
    ══════════════════════════════════════ */
 .msg-user-wrap {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    margin: 16px 0;
+    margin: 20px 0;
+    animation: fadeIn 0.2s ease;
 }
 .msg-asst-wrap {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    margin: 16px 0;
+    margin: 20px 0;
+    animation: fadeIn 0.2s ease;
 }
 .msg-label {
     font-size: 11px;
@@ -150,11 +252,12 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     margin-bottom: 4px;
     font-family: var(--font);
     font-weight: 500;
+    letter-spacing: 0.02em;
 }
 .msg-user {
     background: #f3f4f6;
     color: var(--text-primary);
-    border-radius: 12px 12px 2px 12px;
+    border-radius: 16px 16px 4px 16px;
     padding: 12px 16px;
     max-width: 70%;
     font-size: 14px;
@@ -166,27 +269,24 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     background: var(--bg-card);
     border: 1px solid var(--border);
     color: var(--text-body);
-    border-radius: 12px 12px 12px 2px;
+    border-radius: 16px 16px 16px 4px;
     padding: 12px 16px;
     max-width: 85%;
     font-size: 14px;
     line-height: 1.6;
     word-wrap: break-word;
     font-family: var(--font);
-}
-.msg-ts {
-    font-size: 10px;
-    color: var(--text-tertiary);
-    margin-top: 4px;
+    box-shadow: var(--shadow-sm);
 }
 
 /* ══════════════════════════════════════
-   INLINE DASHBOARD (in chat)
+   INLINE DASHBOARD CARD
    ══════════════════════════════════════ */
 [data-testid="stVerticalBlockBorderWrapper"] {
     border-color: var(--border) !important;
-    border-radius: 12px !important;
+    border-radius: var(--radius-lg) !important;
     background-color: var(--bg-card) !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 
 /* ══════════════════════════════════════
@@ -200,23 +300,26 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     background-color: #ffffff !important;
     color: var(--text-primary) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 8px !important;
+    border-radius: var(--radius-md) !important;
     font-family: var(--font) !important;
-    font-size: 13px !important;
+    font-size: 14px !important;
+    transition: border-color var(--transition), box-shadow var(--transition) !important;
 }
 .stSelectbox > div > div:focus-within,
 .stTextArea textarea:focus,
 .stTextInput input:focus,
 [data-testid="stChatInput"] textarea:focus {
     border-color: var(--accent) !important;
-    box-shadow: none !important;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.04) !important;
 }
 
-/* ── Bottom container (kill the dark dock) ── */
+/* ── Bottom bar (frosted glass) ── */
 div[data-testid="stBottom"] {
-    background-color: transparent !important;
-    border-top: none !important;
-    padding: 0 16px 16px 16px !important;
+    background-color: rgba(250,250,250,0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-top: 1px solid var(--border-subtle) !important;
+    padding: 12px 24px 16px 24px !important;
 }
 div[data-testid="stBottom"] > div {
     background-color: transparent !important;
@@ -230,31 +333,46 @@ div[data-testid="stBottom"] > div {
 [data-testid="stChatInput"] > div {
     background-color: #ffffff !important;
     border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: border-color var(--transition), box-shadow var(--transition) !important;
+}
+[data-testid="stChatInput"] > div:focus-within {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.04) !important;
 }
 [data-testid="stChatInput"] textarea {
     background-color: #ffffff !important;
     color: var(--text-primary) !important;
     border: none !important;
-    border-radius: 12px !important;
+    border-radius: var(--radius-lg) !important;
+    font-size: 14px !important;
 }
-[data-testid="stChatInput"] textarea::placeholder { color: var(--text-tertiary) !important; }
+[data-testid="stChatInput"] textarea::placeholder {
+    color: var(--text-tertiary) !important;
+}
 [data-testid="stChatInput"] button {
     background-color: transparent !important;
-    color: var(--text-secondary) !important;
+    color: var(--text-tertiary) !important;
     border: none !important;
+    border-radius: var(--radius-sm) !important;
+    transition: color var(--transition) !important;
 }
-[data-testid="stChatInput"] button:hover { color: var(--text-primary) !important; }
+[data-testid="stChatInput"] button:hover {
+    color: var(--text-primary) !important;
+}
 
 /* ══════════════════════════════════════
-   METRICS
+   METRICS (KPI cards)
    ══════════════════════════════════════ */
 [data-testid="stMetric"] {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
     border-left: 3px solid var(--accent) !important;
-    border-radius: 8px !important;
+    border-radius: var(--radius-md) !important;
     padding: 16px 20px !important;
+    animation: fadeInUp 0.3s ease forwards;
+    box-shadow: var(--shadow-sm) !important;
 }
 [data-testid="stMetricValue"] {
     color: var(--text-primary) !important;
@@ -277,70 +395,85 @@ div[data-testid="stBottom"] > div {
 [data-testid="stDataFrame"] {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
+    border-radius: var(--radius-lg) !important;
     overflow: hidden !important;
+    animation: fadeInUp 0.3s ease forwards;
 }
 .streamlit-expanderHeader {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 8px !important;
+    border-radius: var(--radius-md) !important;
     color: var(--text-primary) !important;
     font-family: var(--font) !important;
     font-weight: 500 !important;
     font-size: 13px !important;
+    transition: background-color var(--transition) !important;
+}
+.streamlit-expanderHeader:hover {
+    background-color: var(--bg-hover) !important;
 }
 .streamlit-expanderContent {
     background-color: #f9fafb !important;
     border: 1px solid var(--border) !important;
     border-top: none !important;
-    border-radius: 0 0 8px 8px !important;
+    border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
 }
-details summary { color: var(--text-primary) !important; }
+details summary {
+    color: var(--text-primary) !important;
+    cursor: pointer;
+}
 .stCodeBlock, pre, code {
     background-color: #1e1e2e !important;
     color: #e6edf3 !important;
     border: 1px solid #30363d !important;
-    border-radius: 8px !important;
+    border-radius: var(--radius-md) !important;
     font-size: 12px !important;
 }
 [data-testid="stAlert"] {
-    border-radius: 8px !important;
+    border-radius: var(--radius-md) !important;
     font-family: var(--font) !important;
     font-size: 13px !important;
 }
 
 /* ══════════════════════════════════════
-   TABS
+   TABS (Engine View)
    ══════════════════════════════════════ */
 .stTabs [data-baseweb="tab-list"] {
-    gap: 0 !important;
-    background-color: var(--bg-card) !important;
-    border-radius: 8px !important;
+    gap: 2px !important;
+    background-color: #f3f4f6 !important;
+    border-radius: var(--radius-md) !important;
     padding: 3px !important;
-    border: 1px solid var(--border) !important;
+    border: none !important;
 }
 .stTabs [data-baseweb="tab-list"] button {
-    border-radius: 6px !important;
+    border-radius: var(--radius-sm) !important;
     color: var(--text-secondary) !important;
     font-family: var(--font) !important;
     font-weight: 500 !important;
     font-size: 12px !important;
-    padding: 5px 14px !important;
+    padding: 6px 14px !important;
     border-bottom: none !important;
+    transition: all var(--transition) !important;
+}
+.stTabs [data-baseweb="tab-list"] button:hover {
+    color: var(--text-primary) !important;
 }
 .stTabs [aria-selected="true"] {
-    background-color: var(--accent) !important;
-    color: #ffffff !important;
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 
 /* ══════════════════════════════════════
-   PLOTLY
+   PLOTLY CHARTS
    ══════════════════════════════════════ */
 [data-testid="stPlotlyChart"] {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
+    border-radius: var(--radius-lg) !important;
     padding: 8px !important;
+    animation: fadeInUp 0.4s ease forwards;
+    box-shadow: var(--shadow-sm) !important;
 }
 
 /* ══════════════════════════════════════
@@ -351,19 +484,19 @@ details summary { color: var(--text-primary) !important; }
     align-items: center;
     gap: 6px;
     padding: 4px 12px;
-    border-radius: 8px;
+    border-radius: 20px;
     font-size: 12px;
     font-weight: 500;
     font-family: var(--font);
 }
 .gov-pass {
     background-color: rgba(22, 163, 74, 0.06);
-    border: 1px solid rgba(22, 163, 74, 0.2);
+    border: 1px solid rgba(22, 163, 74, 0.15);
     color: var(--success);
 }
 .gov-fail {
     background-color: rgba(220, 38, 38, 0.06);
-    border: 1px solid rgba(220, 38, 38, 0.2);
+    border: 1px solid rgba(220, 38, 38, 0.15);
     color: var(--danger);
 }
 
@@ -378,6 +511,7 @@ details summary { color: var(--text-primary) !important; }
     min-height: 50vh;
     text-align: center;
     padding-top: 8vh;
+    animation: fadeIn 0.4s ease;
 }
 .welcome-title {
     font-size: 2.8rem;
@@ -385,9 +519,10 @@ details summary { color: var(--text-primary) !important; }
     font-family: var(--font);
     line-height: 1.1;
     color: var(--text-primary);
+    letter-spacing: -1px;
 }
 .welcome-title .t-stack { font-weight: 700; }
-.welcome-title .t-forge { font-weight: 400; }
+.welcome-title .t-forge { font-weight: 300; }
 .welcome-sub {
     color: var(--text-secondary);
     font-size: 16px;
@@ -395,7 +530,7 @@ details summary { color: var(--text-primary) !important; }
     max-width: 440px;
     line-height: 1.6;
     font-family: var(--font);
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 .feature-grid {
     display: flex;
@@ -408,13 +543,13 @@ details summary { color: var(--text-primary) !important; }
 .feature-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     padding: 20px;
     flex: 1;
     min-width: 190px;
     max-width: 230px;
     text-align: left;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: border-color var(--transition), box-shadow var(--transition);
 }
 .feature-card:hover {
     border-color: #d1d5db;
@@ -424,7 +559,7 @@ details summary { color: var(--text-primary) !important; }
     font-weight: 600;
     font-size: 14px;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     font-family: var(--font);
 }
 .feature-desc {
@@ -433,6 +568,15 @@ details summary { color: var(--text-primary) !important; }
     line-height: 1.5;
     font-family: var(--font);
     font-weight: 400;
+}
+
+/* Try suggestion text */
+.try-suggestion {
+    color: var(--text-tertiary);
+    font-size: 14px;
+    font-family: var(--font);
+    text-align: center;
+    margin-top: 12px;
 }
 
 /* ══════════════════════════════════════
@@ -468,66 +612,6 @@ details summary { color: var(--text-primary) !important; }
 }
 
 /* ══════════════════════════════════════
-   SIDEBAR PIECES
-   ══════════════════════════════════════ */
-.sidebar-brand {
-    font-weight: 700;
-    font-size: 16px;
-    color: var(--text-primary);
-    font-family: var(--font);
-    padding: 2px 0 8px 0;
-}
-.section-label {
-    font-size: 11px;
-    color: var(--text-tertiary);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 500;
-    font-family: var(--font);
-    margin-bottom: 6px;
-}
-.sidebar-footer {
-    position: fixed;
-    bottom: 0;
-    width: 260px;
-    padding: 8px 12px;
-    background-color: var(--bg-sidebar);
-    border-top: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    font-size: 10px;
-    color: var(--text-tertiary);
-    text-align: center;
-    font-family: var(--font);
-}
-
-/* ══════════════════════════════════════
-   LOGIN PAGE
-   ══════════════════════════════════════ */
-.login-title {
-    text-align: center;
-    padding-top: 10vh;
-    margin-bottom: 2rem;
-}
-.login-title h1 {
-    font-size: 2rem !important;
-    font-weight: 700 !important;
-    margin-bottom: 4px !important;
-}
-.login-title .t-stack { font-weight: 700; }
-.login-title .t-forge { font-weight: 400; }
-.login-sub {
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 400;
-}
-.login-error {
-    color: #dc2626;
-    font-size: 12px;
-    margin: 4px 0 0 0;
-    font-family: var(--font);
-}
-
-/* ══════════════════════════════════════
    UTILITIES
    ══════════════════════════════════════ */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -537,15 +621,15 @@ details summary { color: var(--text-primary) !important; }
 
 hr {
     border: none !important;
-    border-top: 1px solid #e5e7eb !important;
+    border-top: 1px solid var(--border-subtle) !important;
     opacity: 1 !important;
-    margin: 12px 0 !important;
+    margin: 16px 0 !important;
 }
 
 [data-testid="stJson"] {
     background-color: #1e1e2e !important;
     border: 1px solid #30363d !important;
-    border-radius: 8px !important;
+    border-radius: var(--radius-md) !important;
 }
 
 .ind-pass { color: #16a34a; font-size: 10px; }
@@ -560,12 +644,9 @@ hr {
 }
 .check-row strong { color: var(--text-primary); font-weight: 500; }
 
-.input-hint {
-    text-align: center;
-    color: var(--text-tertiary);
-    font-size: 11px;
-    font-family: var(--font);
-    margin: 8px 0 4px;
+/* Spinner */
+.stSpinner > div {
+    border-top-color: var(--accent) !important;
 }
 </style>
 """

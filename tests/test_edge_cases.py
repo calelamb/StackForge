@@ -750,7 +750,7 @@ class TestPipelineIntegration:
             {"id": "bar", "type": "bar_chart",
              "sql_query": "SELECT region, COUNT(*) as cnt FROM supply_chain GROUP BY region"},
             {"id": "line", "type": "line_chart",
-             "sql_query": "SELECT strftime(order_date, '%Y-%m') as month, COUNT(*) as cnt FROM supply_chain GROUP BY month ORDER BY month"},
+             "sql_query": "SELECT strftime('%Y-%m', order_date::DATE) as month, COUNT(*) as cnt FROM supply_chain GROUP BY month ORDER BY month"},
             {"id": "pie", "type": "pie_chart",
              "sql_query": "SELECT shipping_mode, COUNT(*) as cnt FROM supply_chain GROUP BY shipping_mode"},
             {"id": "scatter", "type": "scatter_plot",
@@ -758,7 +758,7 @@ class TestPipelineIntegration:
             {"id": "table", "type": "table",
              "sql_query": "SELECT region, product, quantity FROM supply_chain LIMIT 20"},
             {"id": "area", "type": "area_chart",
-             "sql_query": "SELECT strftime(order_date, '%Y-%m') as month, SUM(total_cost) as revenue FROM supply_chain GROUP BY month ORDER BY month"},
+             "sql_query": "SELECT strftime('%Y-%m', order_date::DATE) as month, SUM(total_cost) as revenue FROM supply_chain GROUP BY month ORDER BY month"},
             {"id": "metric", "type": "metric_highlight",
              "sql_query": "SELECT ROUND(AVG(defect_rate), 2) as avg_def FROM supply_chain"},
         ]

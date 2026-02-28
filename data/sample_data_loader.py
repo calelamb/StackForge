@@ -237,6 +237,47 @@ def get_all_sample_data(conn: Optional[duckdb.DuckDBPyConnection] = None, n: int
     return "\n".join(output_lines).strip()
 
 
+def get_date_ranges(conn: Optional[duckdb.DuckDBPyConnection] = None) -> str:
+    """
+    Discover date columns across all tables and return their min/max ranges.
+    Injected into the LLM prompt so it knows the actual timeframe of the data.
+
+    Returns:
+        str: Formatted date range info, e.g. "supply_chain.order_date: 2024-01-01 to 2024-12-30"
+    """
+    if conn is None:
+        conn = get_connection()
+
+    lines = []
+    try:
+        tables_result = conn.execute("SHOW TABLES").fetchall()
+        table_names = [row[0] for row in tables_result]
+    except Exception:
+        return ""
+
+    for table_name in table_names:
+        try:
+            cols = conn.execute(f"DESCRIBE {table_name}").fetchall()
+            for col_name, col_type, *_ in cols:
+                col_type_lower = col_type.lower()
+                col_name_lower = col_name.lower()
+                # Match actual date types OR varchar columns with date-like names
+                is_date_type = any(t in col_type_lower for t in ("date", "timestamp", "time"))
+                is_date_name = any(t in col_name_lower for t in ("_date", "date_", "created", "updated", "_time", "time_"))
+                if is_date_type or is_date_name:
+                    result = conn.execute(
+                        f"SELECT MIN({col_name}), MAX({col_name}) FROM {table_name}"
+                    ).fetchone()
+                    if result and result[0] is not None:
+                        lines.append(f"  - {table_name}.{col_name}: {result[0]} to {result[1]}")
+        except Exception:
+            continue
+
+    if not lines:
+        return ""
+    return "Date ranges in the data:\n" + "\n".join(lines)
+
+
 def get_available_tables(conn: Optional[duckdb.DuckDBPyConnection] = None) -> List[str]:
     """
     Returns a list of all available table names.

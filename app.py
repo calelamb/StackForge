@@ -135,17 +135,45 @@ def process_prompt(prompt: str):
 
     gov = result.get("governance", {})
     app_def = result.get("app_definition", {})
+    exec_results = result.get("execution_results", {})
+
     if gov.get("passed", True):
         n = len(app_def.get("components", []))
         title = app_def.get("app_title", "dashboard")
         comps = app_def.get("components", [])
         comp_types = [c.get("type", "").replace("_", " ") for c in comps]
         type_summary = ", ".join(dict.fromkeys(comp_types))  # unique, ordered
-        msg = (
-            f"I've built <strong>{title}</strong> with {n} components — "
-            f"including {type_summary}. "
-            f"Expand the dashboard below to explore the data interactively."
-        )
+
+        # Check if all components returned empty data
+        empty_count = 0
+        for comp in comps:
+            cid = comp.get("id", "")
+            comp_result = exec_results.get(cid, {})
+            data = comp_result.get("data", []) if isinstance(comp_result, dict) else (comp_result if isinstance(comp_result, list) else [])
+            if not data:
+                empty_count += 1
+
+        if empty_count == n and n > 0:
+            # All components empty — give an intelligent message
+            msg = (
+                f"I built <strong>{title}</strong>, but all {n} queries returned empty results. "
+                f"This usually means the filters or date range in your request don't match the "
+                f"available data. Try rephrasing without specific time constraints, or check the "
+                f"<strong>Your Data</strong> section to see what's loaded."
+            )
+        elif empty_count > 0:
+            msg = (
+                f"I've built <strong>{title}</strong> with {n} components — "
+                f"including {type_summary}. "
+                f"Note: {empty_count} component(s) returned no data — some filters may not "
+                f"match the dataset. Expand below to explore."
+            )
+        else:
+            msg = (
+                f"I've built <strong>{title}</strong> with {n} components — "
+                f"including {type_summary}. "
+                f"Expand the dashboard below to explore the data interactively."
+            )
     else:
         msg = "Governance blocked this request. See the details below for more information."
 
@@ -240,10 +268,23 @@ def render_kpi(component, data):
     st.metric(label=label, value=display)
 
 
+def _render_empty_state(component):
+    """Show a styled empty-state message when a chart has no data."""
+    title = component.get("title", "Chart")
+    st.markdown(
+        f'<div style="text-align:center;padding:40px 16px;color:#9ca3af;font-size:13px">'
+        f'<p style="font-weight:600;color:#6b7280;margin-bottom:4px">{title}</p>'
+        f'No data returned — the query filters may not match the dataset.'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+
 def render_bar_chart(component, data):
     cfg = component.get("config", {})
     df = pd.DataFrame(data)
     if df.empty:
+        _render_empty_state(component)
         return
     x = cfg.get("x_axis", df.columns[0])
     y = cfg.get("y_axis", df.columns[1] if len(df.columns) > 1 else df.columns[0])
@@ -264,6 +305,7 @@ def render_bar_chart(component, data):
 def render_table(component, data):
     df = pd.DataFrame(data)
     if df.empty:
+        _render_empty_state(component)
         return
     cfg = component.get("config", {})
     sort_col = cfg.get("sort_column")
@@ -282,6 +324,7 @@ def render_table(component, data):
 def render_line_chart(component, data):
     df = pd.DataFrame(data)
     if df.empty:
+        _render_empty_state(component)
         return
     cfg = component.get("config", {})
     x = cfg.get("x_axis", df.columns[0])
@@ -296,6 +339,7 @@ def render_line_chart(component, data):
 def render_pie_chart(component, data):
     df = pd.DataFrame(data)
     if df.empty:
+        _render_empty_state(component)
         return
     cfg = component.get("config", {})
     names = cfg.get("names", cfg.get("x_axis", df.columns[0]))
@@ -311,6 +355,7 @@ def render_pie_chart(component, data):
 def render_scatter(component, data):
     df = pd.DataFrame(data)
     if df.empty:
+        _render_empty_state(component)
         return
     cfg = component.get("config", {})
     x = cfg.get("x_axis", df.columns[0])
@@ -325,6 +370,7 @@ def render_scatter(component, data):
 def render_area_chart(component, data):
     df = pd.DataFrame(data)
     if df.empty:
+        _render_empty_state(component)
         return
     cfg = component.get("config", {})
     x = cfg.get("x_axis", df.columns[0])
@@ -798,46 +844,48 @@ def main():
 
         st.markdown("<hr>", unsafe_allow_html=True)
 
-        # ── Templates (collapsible) ──
-        with st.expander("Quick Start", expanded=False):
-            for idx, tmpl in enumerate(TEMPLATES):
-                if st.button(tmpl["name"], key=f"tmpl-{idx}", use_container_width=True):
-                    with st.spinner("Building..."):
-                        process_prompt(tmpl["prompt"])
-                    st.rerun()
+        # ── Templates ──
+        st.markdown('<div class="section-label">Quick start</div>', unsafe_allow_html=True)
+        for idx, tmpl in enumerate(TEMPLATES):
+            if st.button(tmpl["name"], key=f"tmpl-{idx}", use_container_width=True):
+                with st.spinner("Building..."):
+                    process_prompt(tmpl["prompt"])
+                st.rerun()
 
-        # ── Data Sources (collapsible) ──
+        st.markdown("<hr>", unsafe_allow_html=True)
+
+        # ── Data Sources ──
         from data.sample_data_loader import get_available_tables, register_uploaded_csv, remove_table
         current_tables = get_available_tables()
         uploaded = st.session_state.get("uploaded_tables", {})
 
-        with st.expander("Your Data", expanded=False):
-            for tbl in current_tables:
-                if tbl in uploaded:
-                    info = uploaded[tbl]
-                    st.markdown(
-                        f'<div style="display:flex;align-items:center;justify-content:space-between;'
-                        f'padding:6px 10px;background:#f0fdf4;border:1px solid #bbf7d0;'
-                        f'border-radius:8px;margin-bottom:4px;font-size:12px">'
-                        f'<span style="color:#166534;font-weight:600">'
-                        f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
-                        f'<span style="color:#6b7280">{info["rows"]} rows</span>'
-                        f'</div>',
-                        unsafe_allow_html=True,
-                    )
-                else:
-                    st.markdown(
-                        f'<div style="display:flex;align-items:center;justify-content:space-between;'
-                        f'padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;'
-                        f'border-radius:8px;margin-bottom:4px;font-size:12px">'
-                        f'<span style="color:#334155;font-weight:500">'
-                        f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
-                        f'<span style="color:#94a3b8;font-size:11px">built-in</span>'
-                        f'</div>',
-                        unsafe_allow_html=True,
-                    )
+        st.markdown('<div class="section-label">Your Data</div>', unsafe_allow_html=True)
+        for tbl in current_tables:
+            if tbl in uploaded:
+                info = uploaded[tbl]
+                st.markdown(
+                    f'<div style="display:flex;align-items:center;justify-content:space-between;'
+                    f'padding:6px 10px;background:#f0fdf4;border:1px solid #bbf7d0;'
+                    f'border-radius:8px;margin-bottom:4px;font-size:12px">'
+                    f'<span style="color:#166534;font-weight:600">'
+                    f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
+                    f'<span style="color:#6b7280">{info["rows"]} rows</span>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.markdown(
+                    f'<div style="display:flex;align-items:center;justify-content:space-between;'
+                    f'padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;'
+                    f'border-radius:8px;margin-bottom:4px;font-size:12px">'
+                    f'<span style="color:#334155;font-weight:500">'
+                    f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
+                    f'<span style="color:#94a3b8;font-size:11px">built-in</span>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
 
-        # ── CSV Upload (always visible) ──
+        # ── CSV Upload ──
         csv_files = st.file_uploader(
             "Upload CSV",
             type=["csv"],
@@ -872,27 +920,26 @@ def main():
             "Show Engine", value=st.session_state.show_engine
         )
 
-        # ── History & Admin (collapsible) ──
-        with st.expander("History", expanded=False):
-            if st.session_state.current_page == "graph_history":
-                if st.button("Back to Chat", key="back_from_history", use_container_width=True):
+        # ── History ──
+        st.markdown('<div class="section-label">History</div>', unsafe_allow_html=True)
+        if st.session_state.current_page == "graph_history":
+            if st.button("Back to Chat", key="back_from_history", use_container_width=True):
+                st.session_state.current_page = "chat"
+                st.rerun()
+        else:
+            if st.button("Graph History", key="graph_history_btn", use_container_width=True):
+                st.session_state.current_page = "graph_history"
+                st.rerun()
+
+        if role == "admin":
+            if st.session_state.current_page == "audit_history":
+                if st.button("Back to Chat", key="back_to_chat", use_container_width=True):
                     st.session_state.current_page = "chat"
                     st.rerun()
             else:
-                if st.button("Graph History", key="graph_history_btn", use_container_width=True):
-                    st.session_state.current_page = "graph_history"
+                if st.button("Audit History", key="audit_history_btn", use_container_width=True):
+                    st.session_state.current_page = "audit_history"
                     st.rerun()
-
-            if role == "admin":
-                st.markdown("<hr>", unsafe_allow_html=True)
-                if st.session_state.current_page == "audit_history":
-                    if st.button("Back to Chat", key="back_to_chat", use_container_width=True):
-                        st.session_state.current_page = "chat"
-                        st.rerun()
-                else:
-                    if st.button("Audit History", key="audit_history_btn", use_container_width=True):
-                        st.session_state.current_page = "audit_history"
-                        st.rerun()
 
         # ── Sign out at bottom (subtle) ──
         st.markdown('<div style="height:24px"></div>', unsafe_allow_html=True)

@@ -183,6 +183,10 @@ Based on the user's request, create an app definition that:
 3. Provides useful filters for exploration
 4. Follows the app_definition schema exactly
 
+{date_ranges}
+
+IMPORTANT: When the user says "last year", "recent", "over time", etc., use the ACTUAL date ranges above — do NOT assume today's date. The data may not cover the current calendar year.
+
 IMPORTANT SQL RULES:
 - All SQL queries must be valid DuckDB syntax
 - You can query any of the available tables listed in the schema above
@@ -231,7 +235,7 @@ def parse_intent(
     Raises:
         ValueError: If GPT-5.1 response is invalid or missing function call
     """
-    from data.sample_data_loader import get_table_schema, get_all_sample_data
+    from data.sample_data_loader import get_table_schema, get_all_sample_data, get_date_ranges
 
     # Load schema and sample data if not provided
     if table_schema is None:
@@ -240,10 +244,14 @@ def parse_intent(
     if sample_data is None:
         sample_data = get_all_sample_data(n=3)
 
+    # Get actual date ranges from data
+    date_ranges = get_date_ranges()
+
     # Inject schema into system prompt
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(
         schema=table_schema,
         sample_data=sample_data,
+        date_ranges=date_ranges,
     )
 
     # For refinement mode, include existing app in context

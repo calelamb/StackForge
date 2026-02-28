@@ -903,6 +903,21 @@ hr {
     color: var(--text-secondary);
 }
 
+/* ── Sidebar expander overrides (minimal) ── */
+section[data-testid="stSidebar"] .stExpander,
+section[data-testid="stSidebar"] [data-testid="stExpander"] {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    margin: 0 !important;
+}
+section[data-testid="stSidebar"] .stExpander [data-testid="stExpanderDetails"],
+section[data-testid="stSidebar"] [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+    border-top: none !important;
+    padding: 0 4px 8px 4px !important;
+    background-color: transparent !important;
+}
+
 /* Sign-out button — subtle text link, not a nav item */
 section[data-testid="stSidebar"] .stButton:last-of-type > button {
     font-size: 11px !important;

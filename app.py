@@ -798,50 +798,46 @@ def main():
 
         st.markdown("<hr>", unsafe_allow_html=True)
 
-        # ── Templates ──
-        st.markdown('<div class="section-label">Quick start</div>', unsafe_allow_html=True)
-        for idx, tmpl in enumerate(TEMPLATES):
-            if st.button(tmpl["name"], key=f"tmpl-{idx}", use_container_width=True):
-                with st.spinner("Building..."):
-                    process_prompt(tmpl["prompt"])
-                st.rerun()
+        # ── Templates (collapsible) ──
+        with st.expander("Quick Start", expanded=False):
+            for idx, tmpl in enumerate(TEMPLATES):
+                if st.button(tmpl["name"], key=f"tmpl-{idx}", use_container_width=True):
+                    with st.spinner("Building..."):
+                        process_prompt(tmpl["prompt"])
+                    st.rerun()
 
-        st.markdown("<hr>", unsafe_allow_html=True)
-
-        # ── Data Sources ──
-        st.markdown('<div class="section-label">Your Data</div>', unsafe_allow_html=True)
-
-        # Show currently loaded tables
+        # ── Data Sources (collapsible) ──
         from data.sample_data_loader import get_available_tables, register_uploaded_csv, remove_table
         current_tables = get_available_tables()
         uploaded = st.session_state.get("uploaded_tables", {})
 
-        for tbl in current_tables:
-            if tbl in uploaded:
-                info = uploaded[tbl]
-                st.markdown(
-                    f'<div style="display:flex;align-items:center;justify-content:space-between;'
-                    f'padding:6px 10px;background:#f0fdf4;border:1px solid #bbf7d0;'
-                    f'border-radius:8px;margin-bottom:4px;font-size:12px">'
-                    f'<span style="color:#166534;font-weight:600">'
-                    f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
-                    f'<span style="color:#6b7280">{info["rows"]} rows</span>'
-                    f'</div>',
-                    unsafe_allow_html=True,
-                )
-            else:
-                st.markdown(
-                    f'<div style="display:flex;align-items:center;justify-content:space-between;'
-                    f'padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;'
-                    f'border-radius:8px;margin-bottom:4px;font-size:12px">'
-                    f'<span style="color:#334155;font-weight:500">'
-                    f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
-                    f'<span style="color:#94a3b8;font-size:11px">built-in</span>'
-                    f'</div>',
-                    unsafe_allow_html=True,
-                )
+        with st.expander("Your Data", expanded=False):
+            for tbl in current_tables:
+                if tbl in uploaded:
+                    info = uploaded[tbl]
+                    st.markdown(
+                        f'<div style="display:flex;align-items:center;justify-content:space-between;'
+                        f'padding:6px 10px;background:#f0fdf4;border:1px solid #bbf7d0;'
+                        f'border-radius:8px;margin-bottom:4px;font-size:12px">'
+                        f'<span style="color:#166534;font-weight:600">'
+                        f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
+                        f'<span style="color:#6b7280">{info["rows"]} rows</span>'
+                        f'</div>',
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.markdown(
+                        f'<div style="display:flex;align-items:center;justify-content:space-between;'
+                        f'padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;'
+                        f'border-radius:8px;margin-bottom:4px;font-size:12px">'
+                        f'<span style="color:#334155;font-weight:500">'
+                        f'{LUCIDE["database"]} &nbsp;{tbl}</span>'
+                        f'<span style="color:#94a3b8;font-size:11px">built-in</span>'
+                        f'</div>',
+                        unsafe_allow_html=True,
+                    )
 
-        # File uploader
+        # ── CSV Upload (always visible) ──
         csv_files = st.file_uploader(
             "Upload CSV",
             type=["csv"],
@@ -852,7 +848,6 @@ def main():
         if csv_files:
             for uploaded_file in csv_files:
                 file_name = uploaded_file.name
-                # Skip if already registered with same name
                 table_name_check = file_name.replace(".csv", "").lower().replace(" ", "_").replace("-", "_")
                 if table_name_check in uploaded:
                     continue
@@ -864,7 +859,6 @@ def main():
                         "columns": len(df.columns),
                         "file_name": file_name,
                     }
-                    # Reset pipeline since schema changed
                     st.session_state.pipeline_result = None
                     st.session_state.current_app = None
                     st.rerun()
@@ -878,30 +872,27 @@ def main():
             "Show Engine", value=st.session_state.show_engine
         )
 
-        # ── Graph History (all roles) ──
-        st.markdown("<hr>", unsafe_allow_html=True)
-        st.markdown('<div class="section-label">History</div>', unsafe_allow_html=True)
-        if st.session_state.current_page == "graph_history":
-            if st.button("Back to Chat", key="back_from_history", use_container_width=True):
-                st.session_state.current_page = "chat"
-                st.rerun()
-        else:
-            if st.button("Graph History", key="graph_history_btn", use_container_width=True):
-                st.session_state.current_page = "graph_history"
-                st.rerun()
-
-        # ── Admin: Audit History ──
-        if role == "admin":
-            st.markdown("<hr>", unsafe_allow_html=True)
-            st.markdown('<div class="section-label">Admin</div>', unsafe_allow_html=True)
-            if st.session_state.current_page == "audit_history":
-                if st.button("Back to Chat", key="back_to_chat", use_container_width=True):
+        # ── History & Admin (collapsible) ──
+        with st.expander("History", expanded=False):
+            if st.session_state.current_page == "graph_history":
+                if st.button("Back to Chat", key="back_from_history", use_container_width=True):
                     st.session_state.current_page = "chat"
                     st.rerun()
             else:
-                if st.button("Audit History", key="audit_history_btn", use_container_width=True):
-                    st.session_state.current_page = "audit_history"
+                if st.button("Graph History", key="graph_history_btn", use_container_width=True):
+                    st.session_state.current_page = "graph_history"
                     st.rerun()
+
+            if role == "admin":
+                st.markdown("<hr>", unsafe_allow_html=True)
+                if st.session_state.current_page == "audit_history":
+                    if st.button("Back to Chat", key="back_to_chat", use_container_width=True):
+                        st.session_state.current_page = "chat"
+                        st.rerun()
+                else:
+                    if st.button("Audit History", key="audit_history_btn", use_container_width=True):
+                        st.session_state.current_page = "audit_history"
+                        st.rerun()
 
         # ── Sign out at bottom (subtle) ──
         st.markdown('<div style="height:24px"></div>', unsafe_allow_html=True)

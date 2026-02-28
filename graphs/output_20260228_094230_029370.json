@@ -1,0 +1,476 @@
+{
+  "saved_at": "2026-02-28T09:42:30.029486",
+  "prompt": "Can you show me delayed shipment trends over the last year?",
+  "result": {
+    "app_definition": {
+      "app_title": "Delayed Shipment Trends - Last 12 Months",
+      "app_description": "Analyze delayed shipment volume, cost, and delivery performance trends over the last 12 months across suppliers, regions, and shipping modes.",
+      "components": [
+        {
+          "id": "kpi_delayed_orders_last_year",
+          "type": "kpi_card",
+          "title": "Delayed Shipments - Last 12 Months",
+          "sql_query": "SELECT \n  COUNT(*) AS delayed_orders_last_12m\nFROM supply_chain\nWHERE on_time_delivery = 0\n  AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d');",
+          "config": {
+            "value_column": "delayed_orders_last_12m",
+            "metric_name": "Delayed Shipments (12M)",
+            "format": "number",
+            "sort_column": "delayed_orders_last_12m",
+            "sort_order": "desc"
+          }
+        },
+        {
+          "id": "kpi_delayed_cost_last_year",
+          "type": "kpi_card",
+          "title": "Total Cost of Delayed Shipments - Last 12 Months",
+          "sql_query": "SELECT \n  SUM(total_cost + shipping_cost + warehouse_cost) AS delayed_cost_last_12m\nFROM supply_chain\nWHERE on_time_delivery = 0\n  AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d');",
+          "config": {
+            "value_column": "delayed_cost_last_12m",
+            "metric_name": "Delayed Shipment Cost (12M)",
+            "format": "currency",
+            "sort_column": "delayed_cost_last_12m",
+            "sort_order": "desc"
+          }
+        },
+        {
+          "id": "line_delayed_shipments_monthly",
+          "type": "line_chart",
+          "title": "Monthly Delayed Shipments - Last 12 Months",
+          "sql_query": "SELECT \n  strftime(order_date, '%Y-%m') AS order_month,\n  COUNT(*) AS delayed_orders\nFROM supply_chain\nWHERE on_time_delivery = 0\n  AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\nGROUP BY order_month\nORDER BY order_month ASC;",
+          "config": {
+            "x_axis": "order_month",
+            "y_axis": "delayed_orders",
+            "format": "number",
+            "sort_column": "order_month",
+            "sort_order": "asc"
+          }
+        },
+        {
+          "id": "area_delayed_cost_monthly",
+          "type": "area_chart",
+          "title": "Monthly Delayed Shipment Cost - Last 12 Months",
+          "sql_query": "SELECT \n  strftime(order_date, '%Y-%m') AS order_month,\n  SUM(total_cost + shipping_cost + warehouse_cost) AS delayed_cost\nFROM supply_chain\nWHERE on_time_delivery = 0\n  AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\nGROUP BY order_month\nORDER BY order_month ASC;",
+          "config": {
+            "x_axis": "order_month",
+            "y_axis": "delayed_cost",
+            "format": "currency",
+            "sort_column": "order_month",
+            "sort_order": "asc"
+          }
+        },
+        {
+          "id": "bar_delayed_by_region",
+          "type": "bar_chart",
+          "title": "Delayed Shipments by Region - Last 12 Months",
+          "sql_query": "SELECT \n  region,\n  COUNT(*) AS delayed_orders\nFROM supply_chain\nWHERE on_time_delivery = 0\n  AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\nGROUP BY region\nORDER BY delayed_orders DESC;",
+          "config": {
+            "x_axis": "region",
+            "y_axis": "delayed_orders",
+            "format": "number",
+            "sort_column": "delayed_orders",
+            "sort_order": "desc"
+          }
+        },
+        {
+          "id": "table_delayed_last_year",
+          "type": "table",
+          "title": "Delayed Shipment Details - Last 12 Months",
+          "sql_query": "SELECT \n  order_id,\n  order_date,\n  supplier,\n  region,\n  product,\n  category,\n  quantity,\n  total_cost,\n  shipping_cost,\n  warehouse_cost,\n  defect_rate,\n  delivery_days,\n  on_time_delivery,\n  shipping_mode\nFROM supply_chain\nWHERE on_time_delivery = 0\n  AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\nORDER BY order_date ASC;",
+          "config": {
+            "columns": [
+              "order_id",
+              "order_date",
+              "supplier",
+              "region",
+              "product",
+              "category",
+              "quantity",
+              "total_cost",
+              "shipping_cost",
+              "warehouse_cost",
+              "defect_rate",
+              "delivery_days",
+              "on_time_delivery",
+              "shipping_mode"
+            ],
+            "sort_column": "order_date",
+            "sort_order": "asc"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "id": "filter_region",
+          "name": "Region",
+          "column": "region",
+          "type": "multiselect",
+          "default_values": []
+        },
+        {
+          "id": "filter_supplier",
+          "name": "Supplier",
+          "column": "supplier",
+          "type": "multiselect",
+          "default_values": []
+        },
+        {
+          "id": "filter_category",
+          "name": "Product Category",
+          "column": "category",
+          "type": "multiselect",
+          "default_values": []
+        },
+        {
+          "id": "filter_shipping_mode",
+          "name": "Shipping Mode",
+          "column": "shipping_mode",
+          "type": "multiselect",
+          "default_values": []
+        }
+      ]
+    },
+    "execution_results": {
+      "kpi_delayed_orders_last_year": {
+        "status": "error",
+        "error": "Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 5:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d');\n                                     ^",
+        "row_count": 0
+      },
+      "kpi_delayed_cost_last_year": {
+        "status": "error",
+        "error": "Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 5:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d');\n                                     ^",
+        "row_count": 0
+      },
+      "line_delayed_shipments_monthly": {
+        "status": "error",
+        "error": "Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 6:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                     ^",
+        "row_count": 0
+      },
+      "area_delayed_cost_monthly": {
+        "status": "error",
+        "error": "Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 6:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                     ^",
+        "row_count": 0
+      },
+      "bar_delayed_by_region": {
+        "status": "error",
+        "error": "Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 6:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                     ^",
+        "row_count": 0
+      },
+      "table_delayed_last_year": {
+        "status": "error",
+        "error": "Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 18:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                      ^",
+        "row_count": 0
+      }
+    },
+    "validation": {
+      "overall_status": "error",
+      "components": [
+        {
+          "id": "kpi_delayed_orders_last_year",
+          "title": "Delayed Shipments - Last 12 Months",
+          "type": "kpi_card",
+          "status": "warning",
+          "warnings": [
+            "Query failed: Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 5:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d');\n                                     ^"
+          ],
+          "explanation": "Delayed Shipments - Last 12 Months: Failed to load data (Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 5:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d');\n                                     ^)"
+        },
+        {
+          "id": "kpi_delayed_cost_last_year",
+          "title": "Total Cost of Delayed Shipments - Last 12 Months",
+          "type": "kpi_card",
+          "status": "warning",
+          "warnings": [
+            "Query failed: Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 5:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d');\n                                     ^"
+          ],
+          "explanation": "Total Cost of Delayed Shipments - Last 12 Months: Failed to load data (Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 5:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d');\n                                     ^)"
+        },
+        {
+          "id": "line_delayed_shipments_monthly",
+          "title": "Monthly Delayed Shipments - Last 12 Months",
+          "type": "line_chart",
+          "status": "warning",
+          "warnings": [
+            "Query failed: Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 6:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                     ^"
+          ],
+          "explanation": "Monthly Delayed Shipments - Last 12 Months: Failed to load data (Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 6:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                     ^)"
+        },
+        {
+          "id": "area_delayed_cost_monthly",
+          "title": "Monthly Delayed Shipment Cost - Last 12 Months",
+          "type": "area_chart",
+          "status": "warning",
+          "warnings": [
+            "Query failed: Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 6:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                     ^"
+          ],
+          "explanation": "Monthly Delayed Shipment Cost - Last 12 Months: Failed to load data (Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 6:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                     ^)"
+        },
+        {
+          "id": "bar_delayed_by_region",
+          "title": "Delayed Shipments by Region - Last 12 Months",
+          "type": "bar_chart",
+          "status": "warning",
+          "warnings": [
+            "Query failed: Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 6:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                     ^"
+          ],
+          "explanation": "Delayed Shipments by Region - Last 12 Months: Failed to load data (Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 6:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                     ^)"
+        },
+        {
+          "id": "table_delayed_last_year",
+          "title": "Delayed Shipment Details - Last 12 Months",
+          "type": "table",
+          "status": "warning",
+          "warnings": [
+            "Query failed: Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 18:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                      ^"
+          ],
+          "explanation": "Delayed Shipment Details - Last 12 Months: Failed to load data (Binder Error: No function matches the given name and argument types 'date_sub(STRING_LITERAL, INTEGER_LITERAL, DATE)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tdate_sub(VARCHAR, DATE, DATE) -> BIGINT\n\tdate_sub(VARCHAR, TIME, TIME) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP, TIMESTAMP) -> BIGINT\n\tdate_sub(VARCHAR, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH TIME ZONE) -> BIGINT\n\n\nLINE 18:   AND order_date >= strftime(date_sub('month', 12, current_date), '%Y-%m-%d')\n                                      ^)"
+        }
+      ],
+      "total_warnings": 6
+    },
+    "governance": {
+      "overall_status": "pass",
+      "passed": true,
+      "role": "admin",
+      "role_display_name": "Administrator",
+      "checks": [
+        {
+          "name": "sql_sanitization",
+          "status": "pass",
+          "details": "All queries passed sanitization"
+        },
+        {
+          "name": "column_access",
+          "status": "pass",
+          "details": "All columns accessible"
+        },
+        {
+          "name": "component_permissions",
+          "status": "pass",
+          "details": "All component types allowed"
+        },
+        {
+          "name": "pii_detection",
+          "status": "pass",
+          "details": "No PII detected"
+        },
+        {
+          "name": "access_control",
+          "status": "pass",
+          "details": "Role 'admin' granted create_app"
+        },
+        {
+          "name": "query_complexity",
+          "status": "pass",
+          "details": "Analyzed 6 queries"
+        },
+        {
+          "name": "data_quality",
+          "status": "pass",
+          "details": "good"
+        },
+        {
+          "name": "export_control",
+          "status": "pass",
+          "details": "0 rows (limit: None)"
+        }
+      ],
+      "sql_safety": {
+        "safe": true,
+        "blocked_keywords": [],
+        "query_length_ok": true,
+        "details": ""
+      },
+      "column_access": {
+        "allowed": true,
+        "blocked_columns": [],
+        "column_details": [
+          {
+            "column": "order_date",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "order_date",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "total_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "shipping_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "warehouse_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "order_date",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "order_date",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "total_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "shipping_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "warehouse_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "order_date",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "region",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "order_id",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "order_date",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "region",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "product",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "category",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "shipping_mode",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "quantity",
+            "sensitivity": "public",
+            "allowed": true
+          },
+          {
+            "column": "total_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "shipping_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "warehouse_cost",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "defect_rate",
+            "sensitivity": "internal",
+            "allowed": true
+          },
+          {
+            "column": "supplier",
+            "sensitivity": "restricted",
+            "allowed": true
+          }
+        ],
+        "redaction_needed": false
+      },
+      "component_permissions": {
+        "allowed": true,
+        "blocked_components": [],
+        "component_count_ok": true,
+        "max_allowed": 15
+      },
+      "pii_detected": [],
+      "pii_redacted": false,
+      "access_granted": true,
+      "query_complexity": {
+        "kpi_delayed_orders_last_year": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "kpi_delayed_cost_last_year": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "line_delayed_shipments_monthly": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "area_delayed_cost_monthly": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "bar_delayed_by_region": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": true,
+          "is_complex": false
+        },
+        "table_delayed_last_year": {
+          "join_count": 0,
+          "subquery_count": 0,
+          "has_aggregation": false,
+          "is_complex": false
+        }
+      },
+      "data_quality": {
+        "overall_quality": "good",
+        "null_count": 0,
+        "duplicate_count": 0,
+        "outlier_count": 0,
+        "issues": [],
+        "per_component": {}
+      },
+      "export_allowed": true,
+      "export_formats": [
+        "csv",
+        "json",
+        "pdf"
+      ],
+      "warnings": [],
+      "blocked_reasons": [],
+      "audit_entry_id": "b051c7f3"
+    }
+  }
+}

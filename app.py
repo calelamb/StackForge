@@ -254,7 +254,7 @@ def _format_kpi_value(val, fmt):
         return f"{val:,.2f}"
 
 
-def render_kpi(component, data):
+def render_kpi(component, data, chart_key=None):
     cfg = component.get("config", {})
     value_col = cfg.get("value_column", "")
     label = cfg.get("metric_name", component.get("title", "KPI"))
@@ -265,7 +265,7 @@ def render_kpi(component, data):
         display = _format_kpi_value(val, fmt)
     else:
         display = "—"
-    st.metric(label=label, value=display)
+    st.metric(label=label, value=display, key=chart_key)
 
 
 def _render_empty_state(component):
@@ -280,7 +280,7 @@ def _render_empty_state(component):
     )
 
 
-def render_bar_chart(component, data):
+def render_bar_chart(component, data, chart_key=None):
     cfg = component.get("config", {})
     df = pd.DataFrame(data)
     if df.empty:
@@ -299,10 +299,10 @@ def render_bar_chart(component, data):
     fig = px.bar(df, x=x, y=y, color=color_col, title=component.get("title", ""),
                  barmode="group", color_discrete_sequence=ACCENT_COLORS, labels=_labels)
     fig.update_layout(**PLOTLY_DEFAULTS, xaxis=PLOTLY_GRID, yaxis=PLOTLY_GRID)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=chart_key)
 
 
-def render_table(component, data):
+def render_table(component, data, chart_key=None):
     df = pd.DataFrame(data)
     if df.empty:
         _render_empty_state(component)
@@ -318,10 +318,10 @@ def render_table(component, data):
         f"{component.get('title', 'Table')}</p>",
         unsafe_allow_html=True,
     )
-    st.dataframe(df, use_container_width=True, height=380)
+    st.dataframe(df, use_container_width=True, height=380, key=chart_key)
 
 
-def render_line_chart(component, data):
+def render_line_chart(component, data, chart_key=None):
     df = pd.DataFrame(data)
     if df.empty:
         _render_empty_state(component)
@@ -333,10 +333,10 @@ def render_line_chart(component, data):
                   color_discrete_sequence=ACCENT_COLORS,
                   labels={x: _clean_label(x), y: _clean_label(y)})
     fig.update_layout(**PLOTLY_DEFAULTS, xaxis=PLOTLY_GRID, yaxis=PLOTLY_GRID)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=chart_key)
 
 
-def render_pie_chart(component, data):
+def render_pie_chart(component, data, chart_key=None):
     df = pd.DataFrame(data)
     if df.empty:
         _render_empty_state(component)
@@ -349,10 +349,10 @@ def render_pie_chart(component, data):
                  labels={names: _clean_label(names), values: _clean_label(values)})
     fig.update_layout(**PLOTLY_DEFAULTS)
     fig.update_traces(marker=dict(line=dict(color="#ffffff", width=2)))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=chart_key)
 
 
-def render_scatter(component, data):
+def render_scatter(component, data, chart_key=None):
     df = pd.DataFrame(data)
     if df.empty:
         _render_empty_state(component)
@@ -364,10 +364,10 @@ def render_scatter(component, data):
                      color_discrete_sequence=ACCENT_COLORS,
                      labels={x: _clean_label(x), y: _clean_label(y)})
     fig.update_layout(**PLOTLY_DEFAULTS, xaxis=PLOTLY_GRID, yaxis=PLOTLY_GRID)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=chart_key)
 
 
-def render_area_chart(component, data):
+def render_area_chart(component, data, chart_key=None):
     df = pd.DataFrame(data)
     if df.empty:
         _render_empty_state(component)
@@ -379,10 +379,10 @@ def render_area_chart(component, data):
                   color_discrete_sequence=ACCENT_COLORS,
                   labels={x: _clean_label(x), y: _clean_label(y)})
     fig.update_layout(**PLOTLY_DEFAULTS, xaxis=PLOTLY_GRID, yaxis=PLOTLY_GRID)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=chart_key)
 
 
-def render_metric_highlight(component, data):
+def render_metric_highlight(component, data, chart_key=None):
     cfg = component.get("config", {})
     label = cfg.get("metric_name", component.get("title", "Metric"))
     fmt = cfg.get("format", "")
@@ -393,7 +393,7 @@ def render_metric_highlight(component, data):
         display = _format_kpi_value(val, fmt)
     else:
         display = "—"
-    st.metric(label=label, value=display)
+    st.metric(label=label, value=display, key=chart_key)
 
 
 RENDERERS = {
@@ -562,7 +562,7 @@ def _render_engine_panel(result):
 # ============================================================================
 
 
-def _render_inline_dashboard(result):
+def _render_inline_dashboard(result, dashboard_key="dash"):
     """Render a complete dashboard inline in a chat message."""
     app_def = result.get("app_definition", {})
     exec_results = result.get("execution_results", {})
@@ -625,7 +625,7 @@ def _render_inline_dashboard(result):
                     data = _get_data(exec_results.get(cid, {}))
                     renderer = RENDERERS.get(comp.get("type"))
                     if renderer:
-                        renderer(comp, data)
+                        renderer(comp, data, chart_key=f"{dashboard_key}_{cid}")
                     narration = narration_map.get(cid, "")
                     if narration:
                         st.markdown(
@@ -644,7 +644,7 @@ def _render_inline_dashboard(result):
                     data = _get_data(exec_results.get(cid, {}))
                     renderer = RENDERERS.get(ctype)
                     if renderer:
-                        renderer(comp, data)
+                        renderer(comp, data, chart_key=f"{dashboard_key}_{cid}")
                     else:
                         st.info(f"Unsupported: {ctype}")
                     narration = narration_map.get(cid, "")
@@ -1090,7 +1090,7 @@ def _render_graph_history():
             st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
 
             # Re-render the dashboard using the stored execution results
-            _render_inline_dashboard(result)
+            _render_inline_dashboard(result, dashboard_key=f"hist_{f.stem}")
 
             col_dl, _ = st.columns([1, 4])
             with col_dl:
@@ -1335,7 +1335,7 @@ def _render_main_content():
                 if pipeline_result:
                     app_title = pipeline_result.get("app_definition", {}).get("app_title", "Dashboard")
                     with st.expander(f"Dashboard: {app_title}", expanded=is_latest):
-                        _render_inline_dashboard(pipeline_result)
+                        _render_inline_dashboard(pipeline_result, dashboard_key=f"msg_{idx}")
 
 
 main()

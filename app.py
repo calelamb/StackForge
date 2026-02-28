@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 
-from ui.styles import inject_custom_css
+from ui.styles import inject_custom_css, LUCIDE
 
 # ─── Auth constants ───
 PASSWORDS = {"admin": "admin123", "analyst": "analyst", "viewer": "viewer"}
@@ -148,7 +148,7 @@ PLOTLY_DEFAULTS = dict(
     margin=dict(l=40, r=20, t=50, b=40),
 )
 PLOTLY_GRID = dict(gridcolor="#e5e7eb")
-ACCENT_COLORS = ["#111111", "#3b82f6", "#8b5cf6", "#06b6d4", "#f59e0b", "#ef4444"]
+ACCENT_COLORS = ["#3b82f6", "#8b5cf6", "#06b6d4", "#f59e0b", "#10b981", "#ef4444", "#ec4899", "#6366f1"]
 
 
 # ============================================================================
@@ -167,6 +167,13 @@ def _get_data(comp_result):
 # ============================================================================
 # RENDERERS
 # ============================================================================
+
+
+def _clean_label(col_name: str) -> str:
+    """Turn 'total_shipping_cost' into 'Total Shipping Cost'."""
+    if not col_name:
+        return col_name
+    return col_name.replace("_", " ").strip().title()
 
 
 def _format_kpi_value(val, fmt):
@@ -222,8 +229,11 @@ def render_bar_chart(component, data):
         if c != x and c != y and df[c].dtype == "object":
             color_col = c
             break
+    _labels = {x: _clean_label(x), y: _clean_label(y)}
+    if color_col:
+        _labels[color_col] = _clean_label(color_col)
     fig = px.bar(df, x=x, y=y, color=color_col, title=component.get("title", ""),
-                 barmode="group", color_discrete_sequence=ACCENT_COLORS)
+                 barmode="group", color_discrete_sequence=ACCENT_COLORS, labels=_labels)
     fig.update_layout(**PLOTLY_DEFAULTS, xaxis=PLOTLY_GRID, yaxis=PLOTLY_GRID)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -236,6 +246,8 @@ def render_table(component, data):
     sort_col = cfg.get("sort_column")
     if sort_col and sort_col in df.columns:
         df = df.sort_values(sort_col, ascending=(cfg.get("sort_order", "asc") == "asc"))
+    # Clean column headers
+    df.columns = [_clean_label(c) for c in df.columns]
     st.markdown(
         f"<p style='font-weight:600;color:#111111;margin-bottom:4px;font-size:14px'>"
         f"{component.get('title', 'Table')}</p>",
@@ -252,7 +264,8 @@ def render_line_chart(component, data):
     x = cfg.get("x_axis", df.columns[0])
     y = cfg.get("y_axis", df.columns[1] if len(df.columns) > 1 else df.columns[0])
     fig = px.line(df, x=x, y=y, title=component.get("title", ""), markers=True,
-                  color_discrete_sequence=ACCENT_COLORS)
+                  color_discrete_sequence=ACCENT_COLORS,
+                  labels={x: _clean_label(x), y: _clean_label(y)})
     fig.update_layout(**PLOTLY_DEFAULTS, xaxis=PLOTLY_GRID, yaxis=PLOTLY_GRID)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -265,7 +278,8 @@ def render_pie_chart(component, data):
     names = cfg.get("names", cfg.get("x_axis", df.columns[0]))
     values = cfg.get("values", cfg.get("y_axis", df.columns[1] if len(df.columns) > 1 else df.columns[0]))
     fig = px.pie(df, names=names, values=values, title=component.get("title", ""),
-                 color_discrete_sequence=ACCENT_COLORS)
+                 color_discrete_sequence=ACCENT_COLORS,
+                 labels={names: _clean_label(names), values: _clean_label(values)})
     fig.update_layout(**PLOTLY_DEFAULTS)
     fig.update_traces(marker=dict(line=dict(color="#ffffff", width=2)))
     st.plotly_chart(fig, use_container_width=True)
@@ -279,7 +293,8 @@ def render_scatter(component, data):
     x = cfg.get("x_axis", df.columns[0])
     y = cfg.get("y_axis", df.columns[1] if len(df.columns) > 1 else df.columns[0])
     fig = px.scatter(df, x=x, y=y, title=component.get("title", ""),
-                     color_discrete_sequence=ACCENT_COLORS)
+                     color_discrete_sequence=ACCENT_COLORS,
+                     labels={x: _clean_label(x), y: _clean_label(y)})
     fig.update_layout(**PLOTLY_DEFAULTS, xaxis=PLOTLY_GRID, yaxis=PLOTLY_GRID)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -292,7 +307,8 @@ def render_area_chart(component, data):
     x = cfg.get("x_axis", df.columns[0])
     y = cfg.get("y_axis", df.columns[1] if len(df.columns) > 1 else df.columns[0])
     fig = px.area(df, x=x, y=y, title=component.get("title", ""),
-                  color_discrete_sequence=ACCENT_COLORS)
+                  color_discrete_sequence=ACCENT_COLORS,
+                  labels={x: _clean_label(x), y: _clean_label(y)})
     fig.update_layout(**PLOTLY_DEFAULTS, xaxis=PLOTLY_GRID, yaxis=PLOTLY_GRID)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -551,13 +567,12 @@ def _render_inline_dashboard(result):
 
 
 def render_login_screen():
-    """Premium login screen — pure Streamlit widgets, no third-party components."""
+    """Minimal login screen — logo, role picker, password, go."""
     ROLE_OPTIONS = ["Data Analyst", "Administrator", "Viewer"]
     ROLE_KEY_MAP = {"Administrator": "admin", "Data Analyst": "analyst", "Viewer": "viewer"}
 
-    # ── Scoped CSS: only injected during login state ──
+    # ── Scoped CSS ──
     st.markdown("""<style>
-    /* Hide ALL chrome aggressively */
     section[data-testid="stSidebar"],
     [data-testid="stSidebarCollapsedControl"],
     div[data-testid="stBottom"],
@@ -570,62 +585,54 @@ def render_login_screen():
         height: 0 !important;
         overflow: hidden !important;
     }
-
-    /* Center the main block — narrow + centered */
     .stMainBlockContainer {
-        max-width: 360px !important;
+        max-width: 320px !important;
         margin: 0 auto !important;
-        padding-top: 10vh !important;
+        padding-top: 14vh !important;
     }
-
-    /* Center ALL content inside the login form */
     .stMainBlockContainer [data-testid="stVerticalBlock"] {
         align-items: center !important;
+        gap: 0.35rem !important;
     }
-    .stMainBlockContainer .stMarkdown {
-        width: 100% !important;
-        text-align: center !important;
-    }
-    .stMainBlockContainer .stMarkdown p {
-        text-align: center !important;
-    }
-    /* But keep form inputs full-width */
+    .stMainBlockContainer .stMarkdown { width: 100% !important; }
     .stMainBlockContainer .stSelectbox,
     .stMainBlockContainer .stTextInput,
-    .stMainBlockContainer .stButton {
-        width: 100% !important;
-    }
+    .stMainBlockContainer .stButton { width: 100% !important; }
 
-    /* Selectbox — light border, not black */
+    /* Inputs */
     .stSelectbox > div > div {
         border-radius: 10px !important;
         min-height: 44px !important;
         font-size: 14px !important;
         border: 1px solid #e5e7eb !important;
         background: #ffffff !important;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
     }
     .stSelectbox > div > div:focus-within {
         border-color: #9ca3af !important;
         box-shadow: 0 0 0 3px rgba(0,0,0,0.03) !important;
     }
     .stSelectbox label { display: none !important; }
-
-    /* Password field — hide toggle, clean border */
-    .stTextInput > div {
+    .stTextInput > div,
+    .stTextInput > div > div {
         width: 100% !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
     }
     .stTextInput input {
         border-radius: 10px !important;
         height: 44px !important;
+        min-height: 44px !important;
         font-size: 14px !important;
         padding: 0 14px !important;
         border: 1px solid #e5e7eb !important;
         background: #ffffff !important;
+        background-color: #ffffff !important;
         color: #111111 !important;
-        font-family: var(--font) !important;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
         width: 100% !important;
+        box-sizing: border-box !important;
     }
     .stTextInput input:focus {
         border-color: #9ca3af !important;
@@ -634,13 +641,13 @@ def render_login_screen():
     }
     .stTextInput input::placeholder { color: #9ca3af !important; }
     .stTextInput label { display: none !important; }
-    /* Hide the password show/hide toggle button */
-    .stTextInput button {
-        display: none !important;
-    }
+    .stTextInput button { display: none !important; }
 
-    /* Sign-in button — solid dark pill */
-    [data-testid="baseButton-primary"] {
+    /* Button — target ALL buttons on login page to force dark fill */
+    .stMainBlockContainer .stButton > button,
+    .stMainBlockContainer .stButton > button[kind="primary"],
+    .stMainBlockContainer [data-testid="baseButton-primary"],
+    .stMainBlockContainer [data-testid="baseButton-primaryFormSubmit"] {
         width: 100% !important;
         height: 44px !important;
         background-color: #111111 !important;
@@ -650,37 +657,32 @@ def render_login_screen():
         font-size: 14px !important;
         font-weight: 500 !important;
         border: none !important;
-        transition: background-color 0.15s ease !important;
-        margin-top: 8px !important;
+        margin-top: 6px !important;
+        cursor: pointer !important;
     }
-    [data-testid="baseButton-primary"]:hover {
+    .stMainBlockContainer .stButton > button:hover,
+    .stMainBlockContainer [data-testid="baseButton-primary"]:hover {
         background-color: #333333 !important;
         background: #333333 !important;
         color: #ffffff !important;
     }
     </style>""", unsafe_allow_html=True)
 
-    # ── Logo + wordmark ──
+    # ── Logo ──
     st.markdown("""
-    <div style="text-align:center;margin-bottom:28px">
-        <div style="width:44px;height:44px;background:#111111;border-radius:11px;
-                    display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <div style="text-align:center;margin-bottom:32px">
+        <div style="width:48px;height:48px;background:#111111;border-radius:12px;
+                    display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="white" stroke-width="1.5"/>
             </svg>
         </div>
-        <div style="font-size:24px;font-weight:700;color:#111111;letter-spacing:-0.5px;
+        <div style="font-size:26px;font-weight:700;color:#111111;letter-spacing:-0.5px;
                     font-family:'DM Sans',-apple-system,sans-serif">StackForge</div>
-        <div style="font-size:13px;color:#9ca3af;margin-top:4px;
-                    font-family:'DM Sans',-apple-system,sans-serif">Sign in to continue</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Role — native selectbox ──
-    st.markdown(
-        '<p class="login-label">Role</p>',
-        unsafe_allow_html=True,
-    )
+    # ── Role dropdown (no label — the dropdown speaks for itself) ──
     selected_display = st.selectbox(
         "Role",
         options=ROLE_OPTIONS,
@@ -689,30 +691,22 @@ def render_login_screen():
         label_visibility="collapsed",
     )
     role_key = ROLE_KEY_MAP.get(selected_display, "analyst")
-    st.markdown(
-        f'<p class="login-hint">{ROLE_DESC[role_key]}</p>',
-        unsafe_allow_html=True,
-    )
 
-    # ── Password ──
-    st.markdown(
-        '<p class="login-label">Password</p>',
-        unsafe_allow_html=True,
-    )
+    # ── Password (no label — placeholder is enough) ──
     pwd = st.text_input(
         "Password",
         type="password",
         key="login_pwd",
         label_visibility="collapsed",
-        placeholder="Enter password",
+        placeholder="Password",
     )
     if st.session_state.get("login_error"):
         st.markdown(
-            '<p class="login-error">Incorrect password</p>',
+            '<p style="color:#dc2626;font-size:12px;text-align:center;margin:0">Incorrect password</p>',
             unsafe_allow_html=True,
         )
 
-    # ── Sign in — native primary button ──
+    # ── Sign in button ──
     if st.button("Sign in", key="login_btn", type="primary", use_container_width=True):
         if pwd == PASSWORDS.get(role_key, ""):
             st.session_state.logged_in = True
@@ -726,8 +720,10 @@ def render_login_screen():
             st.session_state.login_error = True
             st.rerun()
 
+    # ── Footer — single line ──
     st.markdown(
-        '<p class="login-footer">StackForge v1.0 · HackUSU 2026</p>',
+        '<p style="text-align:center;color:#c0c0c0;font-size:11px;margin-top:24px">'
+        'HackUSU 2026</p>',
         unsafe_allow_html=True,
     )
 
@@ -807,10 +803,44 @@ def main():
             unsafe_allow_html=True,
         )
 
-    # ── MAIN AREA ──
+    # ── Layout: chat + optional engine right panel ──
+    _engine_on = st.session_state.show_engine and st.session_state.get("pipeline_result")
+    if _engine_on:
+        st.markdown("""<style>
+        .stMainBlockContainer { max-width: 100% !important; padding-left: 1rem !important; padding-right: 1rem !important; }
+        </style>""", unsafe_allow_html=True)
+        _chat_col, _engine_col = st.columns([3, 2], gap="medium")
+    else:
+        _chat_col, _engine_col = st.container(), None
+
+    with _chat_col:
+        _render_main_content()
+
+    # ── Right engine panel ──
+    if _engine_col is not None:
+        with _engine_col:
+            st.markdown(
+                f'<div class="engine-panel-header">{LUCIDE["sparkles"]} &nbsp;'
+                f'<strong>Engine View</strong></div>',
+                unsafe_allow_html=True,
+            )
+            _render_engine_panel(st.session_state.pipeline_result)
+
+    # ── Chat input (always at bottom) ──
+    user_input = st.chat_input("Describe the app you want to build...")
+    if user_input:
+        with st.spinner("Building..."):
+            process_prompt(user_input)
+        st.rerun()
+
+
+def _render_main_content():
+    """Main area — welcome screen or chat history."""
     if not st.session_state.messages:
-        # ── Welcome state ──
-        st.markdown("""
+        _icon_sparkles = LUCIDE["sparkles"]
+        _icon_chart = LUCIDE["bar-chart-3"]
+        _icon_shield = LUCIDE["shield-check"]
+        st.markdown(f"""
         <div class="welcome-container">
             <div class="welcome-title">
                 <span class="t-stack">Stack</span><span class="t-forge">Forge</span>
@@ -820,18 +850,21 @@ def main():
             </div>
             <div class="feature-grid">
                 <div class="feature-card">
+                    <div class="feature-icon">{_icon_sparkles}</div>
                     <div class="feature-label">Natural Language In</div>
                     <div class="feature-desc">
                         Describe what you need. The compiler handles the rest.
                     </div>
                 </div>
                 <div class="feature-card">
+                    <div class="feature-icon">{_icon_chart}</div>
                     <div class="feature-label">Live SQL Out</div>
                     <div class="feature-desc">
                         Queries generated, executed, and validated in real time.
                     </div>
                 </div>
                 <div class="feature-card">
+                    <div class="feature-icon">{_icon_shield}</div>
                     <div class="feature-label">Governed by Default</div>
                     <div class="feature-desc">
                         Role-based access, PII scanning, full audit trail.
@@ -856,7 +889,6 @@ def main():
                     )
                 st.rerun()
     else:
-        # ── Chat messages ──
         for idx, msg in enumerate(st.session_state.messages):
             ts = msg.get("timestamp", "")
             if msg["role"] == "user":
@@ -868,7 +900,6 @@ def main():
                     unsafe_allow_html=True,
                 )
             else:
-                # ── Streaming text effect for the latest assistant message ──
                 is_latest = (idx == len(st.session_state.messages) - 1)
                 should_stream = msg.get("stream", False) and is_latest
 
@@ -882,7 +913,6 @@ def main():
                     placeholder = st.empty()
                     full_text = msg["content"]
                     streamed = ""
-                    # Stream 3 chars at a time for smooth flow
                     for i in range(0, len(full_text), 3):
                         streamed = full_text[:i+3]
                         placeholder.markdown(
@@ -894,7 +924,6 @@ def main():
                         f'<div class="msg-asst">{full_text}</div></div>',
                         unsafe_allow_html=True,
                     )
-                    # Mark as already streamed so it doesn't re-animate on rerun
                     msg["stream"] = False
                 else:
                     st.markdown(
@@ -905,23 +934,11 @@ def main():
                         unsafe_allow_html=True,
                     )
 
-                # ── Dashboard in collapsible expander ──
                 pipeline_result = msg.get("pipeline_result")
                 if pipeline_result:
                     app_title = pipeline_result.get("app_definition", {}).get("app_title", "Dashboard")
-                    with st.expander(f"View: {app_title}", expanded=is_latest):
+                    with st.expander(f"Dashboard: {app_title}", expanded=is_latest):
                         _render_inline_dashboard(pipeline_result)
-
-        # ── Engine panel (if toggled) ──
-        if st.session_state.show_engine and st.session_state.pipeline_result:
-            _render_engine_panel(st.session_state.pipeline_result)
-
-    # ── Chat input (always at bottom) ──
-    user_input = st.chat_input("Describe the app you want to build...")
-    if user_input:
-        with st.spinner("Building..."):
-            process_prompt(user_input)
-        st.rerun()
 
 
 main()

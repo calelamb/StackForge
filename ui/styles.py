@@ -7,6 +7,17 @@ CUSTOM_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
+/* Lucide icon base class */
+.lucide-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
 :root {
     --bg-page: #fafafa;
     --bg-sidebar: #ffffff;
@@ -79,6 +90,17 @@ p, span, label, li, div {
 /* ══════════════════════════════════════
    SIDEBAR
    ══════════════════════════════════════ */
+/* Hide sidebar collapse button (renders raw "keyboard_double_arrow" text) */
+[data-testid="stSidebarCollapseButton"],
+section[data-testid="stSidebar"] button[kind="header"],
+section[data-testid="stSidebar"] [data-testid="stBaseButton-header"],
+section[data-testid="stSidebar"] > button,
+section[data-testid="stSidebar"] header {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
 section[data-testid="stSidebar"] {
     background-color: var(--bg-sidebar) !important;
     border-right: 1px solid var(--border) !important;
@@ -346,34 +368,65 @@ details[data-testid="stExpanderDetails"] > summary,
     border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
     padding: 12px 16px !important;
 }
-/* Fix the expander toggle marker/arrow — prevent garbled text */
+/* Fix the expander toggle — kill ALL markers and Material Icon spans */
 .stExpander summary::marker,
 [data-testid="stExpander"] summary::marker,
 details summary::marker {
     content: "" !important;
     display: none !important;
+    font-size: 0 !important;
 }
 .stExpander summary::-webkit-details-marker,
 [data-testid="stExpander"] summary::-webkit-details-marker,
 details summary::-webkit-details-marker {
     display: none !important;
 }
-/* Ensure the expand/collapse icon inside summary is visible and clean */
-.stExpander summary svg,
-[data-testid="stExpander"] summary svg {
-    display: inline-block !important;
-    visibility: visible !important;
-    width: 16px !important;
-    height: 16px !important;
-    flex-shrink: 0 !important;
-    margin-right: 6px !important;
-    color: var(--text-tertiary) !important;
+/*
+ * NUCLEAR FIX for garbled expander text.
+ * Streamlit puts an icon <span> with Material-Icons font in <summary>.
+ * The icon font sometimes fails to load, rendering raw ligature text
+ * ("expand_more") that overlaps the label.  Strategy:
+ *   1. Set font-size:0 on <summary> to collapse ALL text.
+ *   2. Re-set font-size on the label <span> only.
+ *   3. Hide all SVGs inside summary.
+ */
+.stExpander summary,
+[data-testid="stExpander"] summary,
+details summary {
+    font-size: 0 !important;
+    line-height: 0 !important;
+    list-style: none !important;
+    display: flex !important;
+    align-items: center !important;
+    overflow: hidden !important;
 }
-/* Fix the summary span text — prevent overlap */
-.stExpander summary span,
-[data-testid="stExpander"] summary span {
+/* Restore font on the label text (the last span, or markdown container) */
+.stExpander summary > span:last-of-type,
+[data-testid="stExpander"] summary > span:last-of-type,
+.stExpander summary p,
+[data-testid="stExpander"] summary p,
+.stExpander summary [data-testid="stMarkdownContainer"],
+[data-testid="stExpander"] summary [data-testid="stMarkdownContainer"],
+.stExpander summary [data-testid="stMarkdownContainer"] p {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
     color: var(--text-primary) !important;
     font-family: var(--font) !important;
+    font-weight: 500 !important;
+}
+/* Hide the Material Icons toggle icon span */
+.stExpander summary > span:first-child,
+[data-testid="stExpander"] summary > span:first-child,
+.stExpander summary [data-testid="stExpanderToggleIcon"],
+[data-testid="stExpander"] summary [data-testid="stExpanderToggleIcon"] {
+    display: none !important;
+    width: 0 !important;
+    overflow: hidden !important;
+}
+/* Hide SVG arrows */
+.stExpander summary svg,
+[data-testid="stExpander"] summary svg {
+    display: none !important;
 }
 .stExpander summary:hover,
 [data-testid="stExpander"] summary:hover {
@@ -512,11 +565,23 @@ div[data-testid="stBottom"] > div {
 [data-testid="stMetric"] {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
-    border-left: 3px solid var(--accent) !important;
-    border-radius: var(--radius-md) !important;
-    padding: 16px 20px !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 20px 22px !important;
     animation: fadeInUp 0.3s ease forwards;
     box-shadow: var(--shadow-sm) !important;
+    position: relative;
+    overflow: hidden;
+}
+/* Subtle top accent bar on KPI cards */
+[data-testid="stMetric"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 [data-testid="stMetricValue"] {
     color: var(--text-primary) !important;
@@ -646,22 +711,23 @@ details summary {
 .gov-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 500;
     font-family: var(--font);
+    letter-spacing: 0.02em;
 }
 .gov-pass {
-    background-color: rgba(22, 163, 74, 0.06);
-    border: 1px solid rgba(22, 163, 74, 0.15);
-    color: var(--success);
+    background-color: rgba(22, 163, 74, 0.08);
+    color: #15803d;
+    border: none;
 }
 .gov-fail {
-    background-color: rgba(220, 38, 38, 0.06);
-    border: 1px solid rgba(220, 38, 38, 0.15);
-    color: var(--danger);
+    background-color: rgba(220, 38, 38, 0.08);
+    color: #b91c1c;
+    border: none;
 }
 
 /* ══════════════════════════════════════
@@ -718,6 +784,16 @@ details summary {
 .feature-card:hover {
     border-color: #d1d5db;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.feature-icon {
+    margin-bottom: 10px;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+}
+.feature-icon svg {
+    width: 20px;
+    height: 20px;
 }
 .feature-label {
     font-weight: 600;
@@ -808,6 +884,25 @@ hr {
 }
 .check-row strong { color: var(--text-primary); font-weight: 500; }
 
+/* Engine right panel */
+.engine-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: var(--font);
+    padding: 8px 0 12px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+}
+.engine-panel-header svg {
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+}
+
 /* Sign-out button — subtle text link, not a nav item */
 section[data-testid="stSidebar"] .stButton:last-of-type > button {
     font-size: 11px !important;
@@ -880,9 +975,35 @@ section[data-testid="stSidebar"] .stButton:last-of-type > button:hover {
     border-top-color: var(--accent) !important;
 }
 </style>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+});
+// Re-run on Streamlit rerenders
+const _lucideObs = new MutationObserver(function() {
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+});
+_lucideObs.observe(document.body, { childList: true, subtree: true });
+</script>
 """
+
+# Lucide icon SVGs for inline use (no JS dependency needed)
+LUCIDE = {
+    "layout-dashboard": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>',
+    "bar-chart-3": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>',
+    "package-search": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/><circle cx="18.5" cy="15.5" r="2.5"/><path d="M20.27 17.27 22 19"/></svg>',
+    "shield-check": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>',
+    "truck": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 13.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>',
+    "globe": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>',
+    "file-text": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>',
+    "dollar-sign": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    "chevron-down": '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+    "chevron-right": '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+    "sparkles": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>',
+}
 
 
 def inject_custom_css(st_ref):
-    """Inject the light theme CSS."""
+    """Inject the light theme CSS + Lucide icons."""
     st_ref.markdown(CUSTOM_CSS, unsafe_allow_html=True)

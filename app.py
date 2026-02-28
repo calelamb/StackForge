@@ -265,7 +265,7 @@ def render_kpi(component, data, chart_key=None):
         display = _format_kpi_value(val, fmt)
     else:
         display = "—"
-    st.metric(label=label, value=display, key=chart_key)
+    st.metric(label=label, value=display)
 
 
 def _render_empty_state(component):
@@ -393,7 +393,7 @@ def render_metric_highlight(component, data, chart_key=None):
         display = _format_kpi_value(val, fmt)
     else:
         display = "—"
-    st.metric(label=label, value=display, key=chart_key)
+    st.metric(label=label, value=display)
 
 
 RENDERERS = {

@@ -1,4 +1,4 @@
-# PipelineGPT — Natural Language Data Pipeline Compiler
+# StackForge — AI-Powered Data App Factory
 
 > **HackUSU 2026** · Data App Factory Track · February 27–28, 2026
 
@@ -6,100 +6,104 @@
 
 ## The Problem
 
-Every company with data has the same bottleneck. Business teams — sales ops, finance, marketing — constantly need data moved, cleaned, combined, and summarized. A sales VP needs a weekly report on underperforming reps. A marketing director needs campaign data merged with customer records to calculate conversion rates. Finance needs to reconcile billing numbers with analytics.
-
-Each of these requests follows the same structural pattern: read data from a source, transform it, and write the output somewhere. That's a data pipeline. And right now, every one of those pipelines is hand-coded by an engineer.
-
-A senior data engineer costs $150K–$200K per year. They spent years learning distributed computing, Spark internals, and cloud architecture. And they spend a significant chunk of their week writing mechanical variations of the same pattern — read a CSV, clean some dates, join two tables, filter rows, aggregate, write output. The cognitive effort isn't in the code; it's in understanding what the business person wants. The code itself is plumbing.
-
-And it's slow. A request goes into a Jira backlog, gets picked up next week, requires a 30-minute clarification meeting, an hour of coding, an hour of testing, then deployment. Two weeks from "I need this" to "here's your report" — for what is fundamentally a straightforward data operation.
+Business teams need data visibility — supplier performance dashboards, cost breakdowns, quality monitors — but building them requires SQL, Python, and weeks of engineering time. The gap between "I need to see this data" and "here's an interactive dashboard" is massive.
 
 ## Our Solution
 
-PipelineGPT eliminates the translation layer between business intent and executable code.
-
-Instead of: **Business person → describes need → Data engineer → writes Spark code → Pipeline runs**
-
-You get: **Business person → describes need → PipelineGPT → generates Spark code → Pipeline runs**
+StackForge is an AI-powered platform where business users describe what they want to see in plain English, and get back a live, interactive data application — charts, filters, KPIs, and tables — with enterprise governance baked in.
 
 Type this:
 
-> "Pull the sales data from S3, clean up the date formats, join it with the customer table, filter for enterprise accounts over $50K, and summarize total revenue by region."
+> "Show me supplier defect rates by region, highlight anyone above 5%, and let me filter by product category."
 
 Get this:
-1. A **visual pipeline diagram** — boxes connected by arrows showing each step
-2. **Production-ready PySpark code** — real, executable Databricks notebook code
-3. **Plain-English explanations** — what each step does, plus warnings about potential issues
+1. **Interactive Plotly charts** — bar, line, pie, scatter with hover, zoom, and drill-down
+2. **KPI cards** — key metrics at a glance with trend indicators
+3. **Filterable data tables** — sortable, searchable, exportable
+4. **Governance compliance** — PII detection, role-based access, audit logging
 
-The entire process that used to take two weeks now takes two minutes.
+Then refine: "Break that down by quarter" → Dashboard updates. "Add a cost impact column" → Table evolves.
 
-## How It Works — Three-Stage AI Compiler
-
-This is not a ChatGPT wrapper. PipelineGPT is architecturally a **compiler** — but the parser is an LLM and the target language is PySpark.
+## How It Works — Five-Stage AI Engine
 
 ### Stage 1: Intent Parsing
+GPT-5.1 function calling converts natural language → structured app definition (components, SQL queries, layout, filters). The model is constrained to output valid JSON matching a strict schema.
 
-The user's natural language gets converted into a structured pipeline definition using GPT-4 function calling. The model is constrained to output valid JSON matching a strict schema — source nodes, transform nodes, destination nodes, each with operation-specific configuration and dependency chains.
+### Stage 2: SQL Generation
+The AI generates DuckDB SQL queries for each dashboard component — KPI aggregations, chart groupings, table selections — optimized for the Supply Chain dataset.
 
-"Join with customers" becomes `{ operation: "join", config: { joinKey: "customer_id", joinType: "inner" } }`. The model can't hallucinate freeform text — it fills in a formal grammar.
+### Stage 3: Execution
+DuckDB executes all queries in milliseconds against the Supply Chain CSV, producing Pandas DataFrames ready for visualization.
 
-### Stage 2: Code Generation
+### Stage 4: Validation
+Results are checked for empty data, high cardinality, failed queries. Plain-English explanations describe what each component shows.
 
-The structured pipeline JSON is passed to a second GPT-4 call that generates real PySpark code. This is more than string templating — the model understands Spark semantics. It handles schema inference for CSV sources, column collision in joins, type casting in filters, and proper aggregation function selection. A template engine would need hand-coded cases for every combination; the LLM handles the combinatorial explosion naturally.
+### Stage 5: Governance
+Deterministic checks: PII detection (regex), role-based access control (admin/analyst/viewer), query complexity limits, export control, and audit logging.
 
-### Stage 3: Validation & Explanation
+## The "Show Engine" Toggle
 
-A third GPT-4 call reviews the pipeline and generated code, producing plain-English explanations ("Step 3 combines your sales data with the customer database by matching on customer ID") and warnings ("The inner join will drop sales records without a matching customer — consider a left join if you want to keep all records"). These catch issues that even human engineers miss.
+Our technical differentiator. A single toggle reveals what's happening under the hood — generated SQL queries, data transformation flow, governance audit trail, and execution details. Business users see the dashboard; technical reviewers see the engine. Judges see both.
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 14 (App Router, TypeScript) |
-| Styling | Tailwind CSS |
-| AI | OpenAI GPT-4o — function calling (Stages 1 & 3), standard completion (Stage 2) |
-| Pipeline Visualization | React Flow |
-| Code Display | Monaco Editor (VS Code's editor) |
-| Deployment | Vercel |
-
-## AI Architecture
-
-| Stage | Input | AI Technique | Output |
-|---|---|---|---|
-| 1. Intent Parsing | Natural language | GPT-4 function calling → constrained JSON | Structured pipeline definition |
-| 2. Code Generation | Pipeline JSON | GPT-4 completion with PySpark system prompt | Executable PySpark code |
-| 3. Validation | Pipeline + Code | GPT-4 function calling → explanations | Plain-English explanations + warnings |
-
-Three distinct AI calls, each with a different job. The technical depth is in the chain, not any individual call.
-
-## Demo
-
-Click the **"Demo"** button to see the full flow in one click — input populates, diagram builds, code generates, explanations appear.
+| Framework | Streamlit (Python) |
+| AI | OpenAI GPT-5.1 — function calling for constrained app generation |
+| Database | DuckDB (embedded analytical SQL engine) |
+| Visualization | Plotly (interactive charts with dark theme) |
+| Data | Koch Supply Chain dataset (500 rows) |
+| Deployment | Streamlit Community Cloud |
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- OpenAI API key (GPT-4o access)
+- Python 3.10+
+- OpenAI API key (GPT-5.1 access)
 
 ### Setup
 ```bash
-git clone https://github.com/[YOUR-TEAM]/nl-pipeline-builder.git
-cd nl-pipeline-builder
-npm install
-cp .env.local.example .env.local
-# Add your OpenAI API key to .env.local
-npm run dev
+git clone https://github.com/[YOUR-TEAM]/stackforge.git
+cd stackforge
+pip install -r requirements.txt
+cp .env.example .env
+# Add your OpenAI API key to .env
+streamlit run app.py
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:8501](http://localhost:8501).
 
-## Sample Data
+## Demo
 
-Pre-loaded datasets in `src/data/` for demos:
-- `sample-sales.csv` — 50 sales transactions (intentionally messy date formats)
-- `sample-customers.csv` — 30 customer records with account values
-- `sample-employees.csv` — 40 employee records across departments
+Click the **"🎬 Demo"** button to see the full flow — template loads, AI parses, dashboard builds, governance checks run — all in one click.
+
+## Templates
+
+6 pre-built Supply Chain analytics templates:
+- 📊 Supplier Performance Dashboard
+- 📦 Inventory Optimization
+- 💰 Supply Chain Cost Breakdown
+- 🔍 Quality Control Monitor
+- 🚚 Logistics & Shipping Tracker
+- 📈 Executive KPI Summary
+
+## Production Vision: Wiring Your Own Data
+
+In the hackathon demo, StackForge runs against a single Supply Chain CSV loaded into DuckDB in-memory — fully self-contained, no external connections needed.
+
+In production, a company swaps one file (`data/sample_data_loader.py`) to point at their real data warehouse — Databricks SQL, Snowflake, Postgres, or any SQL-compatible source. The rest of the app doesn't change.
+
+The AI reads the actual table schema at runtime and generates queries against whatever data source is connected. The governance layer enforces the company's access policies.
+
+The architecture is intentionally decoupled: **data source → AI query generation → execution → visualization**. Changing the data source requires zero changes to the AI engine, dashboard renderer, or governance layer.
+
+**Production deployment checklist:**
+- Connect to Databricks SQL warehouse (swap DuckDB connection for databricks-sql-connector)
+- Point at real Unity Catalog tables
+- Configure role-based access policies per company org chart
+- Deploy on Streamlit Community Cloud or as a Databricks App
+- Add SSO/authentication layer
 
 ## Team
 
@@ -114,17 +118,16 @@ Pre-loaded datasets in `src/data/` for demos:
 - AI coding assistants were used during development
 - All application code was written during the hackathon (Feb 27–28, 2026)
 - Third-party APIs: OpenAI
-- Static data files prepared before the event
+- Dataset: Supply Chain data provided by Koch Industries / generated for demo
 
 ## Roadmap
 
-- Real Databricks deployment integration (API-based notebook creation)
-- AWS S3 browser for source selection
-- Support for SQL targets (Snowflake, Redshift, BigQuery)
-- Pipeline versioning and diff tracking
-- Collaborative editing with team sharing
-- Scheduled pipeline monitoring and alerting
-- Natural language pipeline *modification* ("change the filter to $100K instead")
+- Databricks SQL connector (replace DuckDB with live Databricks warehouse)
+- Multiple dataset support (upload your own CSV/Parquet)
+- Collaborative app editing with team sharing
+- App versioning and diff tracking
+- Scheduled dashboard refresh via Databricks Jobs
+- Export to Databricks notebook format
 
 ## License
 

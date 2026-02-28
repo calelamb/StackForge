@@ -79,9 +79,9 @@ PipelineGPT is a governed, AI-powered platform where business users describe dat
 ### Architecture: Four-Stage AI Compiler
 
 ```
-Chat Input → [Stage 1: Parse Intent (GPT-4o function calling)]
-          → [Stage 2: Generate Code (GPT-4o completion)]
-          → [Stage 3: Validate (GPT-4o function calling)]  } parallel
+Chat Input → [Stage 1: Parse Intent (GPT-5.1 function calling)]
+          → [Stage 2: Generate Code (GPT-5.1 completion)]
+          → [Stage 3: Validate (GPT-5.1 function calling)]  } parallel
           → [Stage 4: Governance (deterministic rules)]     }
 ```
 
@@ -91,7 +91,7 @@ Chat Input → [Stage 1: Parse Intent (GPT-4o function calling)]
 |-------|-----------|
 | Framework | Next.js 14 (App Router, TypeScript) |
 | Styling | Tailwind CSS (dark theme) |
-| AI | OpenAI GPT-4o — function calling + completion |
+| AI | OpenAI GPT-5.1 — function calling + completion |
 | Pipeline Viz | React Flow |
 | Code Display | Monaco Editor |
 | Deploy | Vercel |

@@ -6,7 +6,7 @@ PipelineGPT is a governed, AI-powered platform for the HackUSU 2026 "Data App Fa
 
 **Core loop:** Conversational chat → Structured pipeline JSON → Visual DAG diagram + Generated PySpark/Databricks code + Explanations + Governance checks → Simulated Deploy to Databricks
 
-**Tech stack:** Next.js 14 (App Router, TypeScript), Tailwind CSS, OpenAI GPT-4o (function calling), React Flow, Monaco Editor, Vercel AI SDK
+**Tech stack:** Next.js 14 (App Router, TypeScript), Tailwind CSS, OpenAI GPT-5.1 (function calling), React Flow, Monaco Editor, Vercel AI SDK
 
 ---
 
@@ -29,7 +29,7 @@ PipelineGPT is a governed, AI-powered platform for the HackUSU 2026 "Data App Fa
 **User Story:** As a business user, I want my plain English descriptions to be accurately converted into structured pipeline definitions, so that the system correctly understands what I need.
 
 **Acceptance Criteria:**
-- WHEN the system receives a natural language input THE SYSTEM SHALL call OpenAI GPT-4o with function calling using a `parsePipelineFunction` schema to produce a constrained JSON pipeline definition
+- WHEN the system receives a natural language input THE SYSTEM SHALL call OpenAI GPT-5.1 with function calling using a `parsePipelineFunction` schema to produce a constrained JSON pipeline definition
 - WHEN the pipeline is parsed THE SYSTEM SHALL produce a valid DAG with at least one source step and at least one destination step
 - WHEN the user mentions "table" or "catalog" THE SYSTEM SHALL prefer Unity Catalog sources (`read_unity_catalog`) with `catalog.schema.table` format
 - WHEN the user mentions S3 THE SYSTEM SHALL use appropriate readers with `s3://` paths
@@ -43,7 +43,7 @@ PipelineGPT is a governed, AI-powered platform for the HackUSU 2026 "Data App Fa
 **User Story:** As a business user, I want to see real, executable PySpark code generated from my pipeline, so that I can deploy it to Databricks.
 
 **Acceptance Criteria:**
-- WHEN the system has a valid pipeline definition THE SYSTEM SHALL call OpenAI GPT-4o (temperature 0.2) to generate PySpark code
+- WHEN the system has a valid pipeline definition THE SYSTEM SHALL call OpenAI GPT-5.1 (temperature 0.2) to generate PySpark code
 - WHEN code is generated THE SYSTEM SHALL start it with `# Databricks notebook source` as the first line
 - WHEN code is generated THE SYSTEM SHALL use Delta Lake read/write patterns, Unity Catalog three-level namespace, `display()` for output, and `dbutils` references
 - WHEN the model includes markdown code fences THE SYSTEM SHALL strip them before displaying
@@ -56,7 +56,7 @@ PipelineGPT is a governed, AI-powered platform for the HackUSU 2026 "Data App Fa
 **User Story:** As a business user, I want plain-English explanations of what each pipeline step does and warnings about potential issues, so that I can understand and trust the generated pipeline.
 
 **Acceptance Criteria:**
-- WHEN the system has generated code THE SYSTEM SHALL call OpenAI GPT-4o with function calling using `validatePipelineFunction` to produce explanations and warnings
+- WHEN the system has generated code THE SYSTEM SHALL call OpenAI GPT-5.1 with function calling using `validatePipelineFunction` to produce explanations and warnings
 - WHEN explanations are generated THE SYSTEM SHALL display each step's explanation in simple, non-technical language (no jargon like "DataFrame" or "schema inference")
 - WHEN warnings are generated THE SYSTEM SHALL display them with severity styling: yellow/💡 for low, orange/⚠️ for medium, red/🚨 for high
 - WHEN the user clicks a node in the pipeline diagram THE SYSTEM SHALL scroll the explanation panel to that step's explanation and highlight it

@@ -6,7 +6,7 @@ This is a hackathon project for HackUSU 2026's "Data App Factory" track, sponsor
 ## Tech Stack
 - Framework: Next.js 14 (App Router, TypeScript)
 - Styling: Tailwind CSS (dark theme, bg-slate-950)
-- AI: OpenAI GPT-4o with function calling
+- AI: OpenAI GPT-5.1 with function calling
 - Pipeline visualization: React Flow
 - Code display: Monaco Editor
 - Deployment: Vercel
@@ -30,9 +30,9 @@ This is a hackathon project for HackUSU 2026's "Data App Factory" track, sponsor
 - OpenAI API key stored in `.env.local` only
 
 ## AI Integration Pattern
-- Stage 1 (Intent Parsing): GPT-4o + function calling with forced tool_choice
-- Stage 2 (Code Generation): GPT-4o standard completion, temperature 0.2
-- Stage 3 (Validation): GPT-4o + function calling with forced tool_choice
+- Stage 1 (Intent Parsing): GPT-5.1 + function calling with forced tool_choice
+- Stage 2 (Code Generation): GPT-5.1 standard completion, temperature 0.2
+- Stage 3 (Validation): GPT-5.1 + function calling with forced tool_choice
 - Stage 4 (Governance): Deterministic rule engine, no AI
 
 ## Databricks/AWS Conventions

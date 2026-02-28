@@ -51,7 +51,7 @@
 
 - [ ] 7. Create `/api/parse-intent` route in `src/app/api/parse-intent/route.ts`
   - Accept POST with `{ input: string }`
-  - Call OpenAI GPT-4o with INTENT_PARSE_PROMPT, parsePipelineFunction, forced tool_choice
+  - Call OpenAI GPT-5.1 with INTENT_PARSE_PROMPT, parsePipelineFunction, forced tool_choice
   - Parse function call result from response.choices[0].message.tool_calls[0].function.arguments
   - Validate result has at least one source and one destination step
   - Return PipelineDefinition as JSON
@@ -60,7 +60,7 @@
 
 - [ ] 8. Create `/api/generate-code` route in `src/app/api/generate-code/route.ts`
   - Accept POST with `{ pipeline: PipelineDefinition }`
-  - Call OpenAI GPT-4o with CODE_GENERATION_PROMPT, temperature 0.2, no function calling
+  - Call OpenAI GPT-5.1 with CODE_GENERATION_PROMPT, temperature 0.2, no function calling
   - Strip any markdown code fences from response (regex replace)
   - Return `{ code: string }`
   - Handle errors with 500
@@ -68,7 +68,7 @@
 
 - [ ] 9. Create `/api/validate` route in `src/app/api/validate/route.ts`
   - Accept POST with `{ pipeline: PipelineDefinition, code: string }`
-  - Call OpenAI GPT-4o with VALIDATION_PROMPT, validatePipelineFunction, forced tool_choice
+  - Call OpenAI GPT-5.1 with VALIDATION_PROMPT, validatePipelineFunction, forced tool_choice
   - Parse function call result
   - Return ValidationResult
   - Handle errors with 500
@@ -97,7 +97,7 @@
 
 - [ ] 12. Create `/api/refine-pipeline` route in `src/app/api/refine-pipeline/route.ts`
   - Accept POST with `{ existingPipeline: PipelineDefinition, refinement: string }`
-  - Call OpenAI GPT-4o with INTENT_PARSE_PROMPT + refinement context (include existing pipeline JSON)
+  - Call OpenAI GPT-5.1 with INTENT_PARSE_PROMPT + refinement context (include existing pipeline JSON)
   - Use same parsePipelineFunction and forced tool_choice
   - Return updated PipelineDefinition
   - _Requirements: 1_

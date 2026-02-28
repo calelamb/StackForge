@@ -2,7 +2,7 @@
 
 ## Overview
 
-PipelineGPT is a four-stage AI compiler that converts natural language into executable Databricks pipelines. The architecture consists of a Next.js 14 App Router frontend with server-side API routes that orchestrate calls to OpenAI GPT-4o and run deterministic governance checks.
+PipelineGPT is a four-stage AI compiler that converts natural language into executable Databricks pipelines. The architecture consists of a Next.js 14 App Router frontend with server-side API routes that orchestrate calls to OpenAI GPT-5.1 and run deterministic governance checks.
 
 ---
 
@@ -13,7 +13,7 @@ USER INPUT (Chat)
        │
        ▼
 ┌──────────────────┐     ┌──────────────────────────┐
-│  ChatInterface   │────▶│  POST /api/parse-intent   │──▶ OpenAI GPT-4o (function calling)
+│  ChatInterface   │────▶│  POST /api/parse-intent   │──▶ OpenAI GPT-5.1 (function calling)
 │  (conversational)│     │  OR /api/refine-pipeline   │    → parsePipelineFunction schema
 └──────────────────┘     └────────────┬───────────────┘
                                       │ PipelineDefinition JSON
@@ -22,7 +22,7 @@ USER INPUT (Chat)
               ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐
               │ React Flow   │  │ POST /api/   │  │ POST /api/       │
               │ Diagram      │  │ generate-code│  │ governance-check │
-              │ (client)     │  │ → GPT-4o     │  │ (deterministic)  │
+              │ (client)     │  │ → GPT-5.1     │  │ (deterministic)  │
               └──────────────┘  └──────┬───────┘  └────────┬─────────┘
                                        │ PySpark code       │ GovernanceCheck[]
                               ┌────────┼────────┐           │
@@ -31,7 +31,7 @@ USER INPUT (Chat)
                      │ Monaco     │ │ POST   │ │ GovernancePanel  │
                      │ Editor     │ │ /api/  │ │ (PII, access,    │
                      │ (code)     │ │validate│ │  quality, audit)  │
-                     └────────────┘ │→GPT-4o │ └──────────────────┘
+                     └────────────┘ │→GPT-5.1 │ └──────────────────┘
                                     └───┬────┘
                                         ▼
                                 ┌────────────────┐
@@ -47,19 +47,19 @@ USER INPUT (Chat)
 ### Stage 1: Intent Parsing
 - **Input:** User's natural language string
 - **API:** `POST /api/parse-intent` (new pipeline) or `POST /api/refine-pipeline` (refinement)
-- **AI Call:** OpenAI GPT-4o with `tools: [parsePipelineFunction]` and `tool_choice: forced`
+- **AI Call:** OpenAI GPT-5.1 with `tools: [parsePipelineFunction]` and `tool_choice: forced`
 - **Output:** `PipelineDefinition` JSON
 
 ### Stage 2: Code Generation
 - **Input:** `PipelineDefinition` JSON
 - **API:** `POST /api/generate-code`
-- **AI Call:** OpenAI GPT-4o standard completion (temperature: 0.2) with `CODE_GENERATION_PROMPT`
+- **AI Call:** OpenAI GPT-5.1 standard completion (temperature: 0.2) with `CODE_GENERATION_PROMPT`
 - **Output:** Raw PySpark code string (Databricks notebook format)
 
 ### Stage 3: Validation & Explanation
 - **Input:** `PipelineDefinition` + generated code
 - **API:** `POST /api/validate`
-- **AI Call:** OpenAI GPT-4o with `tools: [validatePipelineFunction]` and `tool_choice: forced`
+- **AI Call:** OpenAI GPT-5.1 with `tools: [validatePipelineFunction]` and `tool_choice: forced`
 - **Output:** `ValidationResult` (explanations + warnings)
 
 ### Stage 4: Governance (No AI)
@@ -302,7 +302,7 @@ export interface PipelineNodeData {
 ## OpenAI Function Schemas
 
 ### parsePipelineFunction
-Constrained schema for intent parsing. Forces GPT-4o to output a valid `PipelineDefinition` with:
+Constrained schema for intent parsing. Forces GPT-5.1 to output a valid `PipelineDefinition` with:
 - `pipelineName` (string, snake_case)
 - `description` (string, one sentence)
 - `schedule` (object with frequency/dayOfWeek/time/cronExpression, or null)
@@ -337,13 +337,13 @@ Regex patterns scanned against all column names referenced in pipeline configs:
 ## System Prompts
 
 ### INTENT_PARSE_PROMPT
-Instructs GPT-4o to act as a data pipeline architect. Includes:
+Instructs GPT-5.1 to act as a data pipeline architect. Includes:
 - Rules for identifying sources, transforms, destinations, dependencies
 - Databricks/AWS context: Unity Catalog preferences, Delta Lake defaults, S3 paths, Redshift, Glue
 - Available demo data sources (sample CSVs, Unity Catalog examples, S3 examples)
 
 ### CODE_GENERATION_PROMPT
-Instructs GPT-4o to generate Databricks notebook code. Includes:
+Instructs GPT-5.1 to generate Databricks notebook code. Includes:
 - `# Databricks notebook source` as first line
 - Delta Lake read/write patterns
 - Unity Catalog three-level namespace
@@ -353,7 +353,7 @@ Instructs GPT-4o to generate Databricks notebook code. Includes:
 - Z-ORDER optimization comments
 
 ### VALIDATION_PROMPT
-Instructs GPT-4o to review pipeline and code, producing:
+Instructs GPT-5.1 to review pipeline and code, producing:
 - Plain-English explanations (no jargon)
 - Warnings with severity levels
 

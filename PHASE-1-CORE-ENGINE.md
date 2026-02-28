@@ -1,69 +1,86 @@
-# Claude Code PRD: StackForge — Data App Factory
+# StackForge Phase 1: Core Engine (Hours 0–6)
 
-## INSTRUCTIONS FOR CLAUDE CODE
+**Target:** Build a complete, functional data app that converts natural language → interactive Plotly dashboard, running exclusively on this document.
 
-You are building a Streamlit-based data application for HackUSU 2026's "Data App Factory" track (sponsored by Koch Industries, Databricks, and AWS). This is a 19-hour build window. This document is your complete specification. Build the entire application step by step. Commit after each major milestone. Do not skip steps.
+**Success Criteria:**
+- User types a sentence in chat
+- AI parses intent via GPT-5.1 function calling
+- DuckDB executes generated SQL
+- Interactive Plotly dashboard renders with filters, KPI cards, charts, and tables
+- Full end-to-end pipeline works with zero external dependencies
 
 ---
 
 ## PROJECT OVERVIEW
 
-**Track requirement:** Build a "Data App Factory" — a governed framework that empowers non-technical business users (citizen developers) to create their own data applications through conversational AI, while IT/admins maintain governance guardrails.
+**StackForge** is a Data App Factory for HackUSU 2026 (Data App Factory track, sponsored by Koch Industries, Databricks, and AWS).
 
-**What we're building:** StackForge — a governed, AI-powered platform where business users describe data questions through a conversational chat interface, and the system generates LIVE INTERACTIVE DATA APPLICATIONS — dashboards with charts, filterable tables, KPI cards, and drill-down capabilities. The AI doesn't just answer questions — it BUILDS working data apps that users can interact with, refine through conversation, and share.
+**What it does:** Business users describe what they want to see in natural language. StackForge's AI engine parses the intent, generates SQL queries, executes them against real supply chain data, and renders a live interactive dashboard with Plotly charts, KPI cards, sortable tables, and filters.
 
-**Core loop:** Conversational chat → AI parses intent → Generates Python/SQL code → Executes against real data → Renders interactive dashboard components (charts, tables, KPIs) → User refines through follow-up chat → App evolves
+**Key differentiator:** The "Show Engine" toggle reveals the technical engine — generated SQL, data transformation DAG, governance audit trail, and query execution plan. Business users see the dashboard; technical reviewers see the code.
 
-**The "Show Engine" differentiator:** A toggle that reveals the technical engine behind the dashboard — the generated Python/SQL code, the data transformation DAG, governance audit trail, and query execution plan. Business users see their dashboard; technical reviewers see the engine. No other team will have this transparency layer.
+**Tech stack (Phase 1):**
+- **Framework:** Streamlit (Python)
+- **AI:** OpenAI GPT-5.1 with function calling
+- **Data:** Pandas + DuckDB (embedded SQL database)
+- **Visualization:** Plotly (interactive charts)
+- **Environment:** Python 3.9+, virtual environment
 
-**Key differentiators (what judges care about):**
-1. **Interactive, not static** — Generated apps have filters, drill-downs, sortable tables, and responsive charts. Not just images or static text.
-2. **Conversational refinement** — "Break that down by quarter" / "Add a cost impact column" / "Flag suppliers above 5% defect rate" — the app EVOLVES through conversation.
-3. **Governance is baked in** — PII detection, role-based access, audit logging, data masking. Every generated app gets compliance checks.
-4. **Factory model** — Templates that IT admins configure, business users customize via natural language. The platform PRODUCES data apps.
-5. **Real data** — Demos against the actual Supply Chain dataset provided by Koch. Not fake data.
+**What Phase 1 covers (Hours 0–6):**
+1. Project setup: directory structure, config, requirements
+2. Data loading: DuckDB + synthetic supply chain data
+3. Intent parser: GPT-5.1 function calling → structured app definition
+4. SQL executor: DuckDB query execution with filter support
+5. Validator: check results, generate plain-English explanations
+6. Dashboard renderer: All Plotly chart types (bar, line, pie, scatter, area), KPI cards, data tables
+7. Chat interface: basic conversational UI
+8. Main app.py: two-column layout (chat | dashboard)
 
-**Tech stack:**
-- Framework: Streamlit (Python)
-- AI: OpenAI GPT-5.1 with function calling
-- Data: Pandas, Plotly for interactive charts
-- Database: DuckDB (embedded analytical database — blazing fast SQL on CSV/Parquet)
-- Deployment: Streamlit Community Cloud or local
-- Styling: Streamlit native + custom CSS
+**What Phase 1 does NOT include:**
+- Governance checks (Phase 2)
+- "Show Engine" view (Phase 2)
+- Role switching / template library UI (Phase 3)
+- Demo mode / conversational refinement (Phase 3)
 
 ---
 
-## STEP 1: PROJECT SETUP AND DATA LOADING
+## DIRECTORY STRUCTURE
 
-Create the project structure:
+Create this folder layout:
 
 ```
 stackforge/
 ├── app.py                      # Main Streamlit application
-├── requirements.txt            # Dependencies
-├── .env                        # Environment variables
-├── config.py                   # App configuration
+├── requirements.txt            # Python dependencies
+├── .env                        # Environment variables (not in git)
+├── .gitignore                  # Git ignore rules
+├── config.py                   # App configuration, templates, roles
 ├── data/
-│   ├── supply_chain.csv        # Koch-provided Supply Chain dataset
-│   └── sample_data_loader.py   # Data loading and DuckDB setup
+│   ├── __init__.py
+│   ├── sample_data_loader.py   # DuckDB connection + data generation
+│   └── supply_chain.csv        # (Optional) Supply chain CSV data
 ├── engine/
 │   ├── __init__.py
-│   ├── intent_parser.py        # Stage 1: NL → structured intent (GPT-5.1 function calling)
-│   ├── executor.py             # Stage 3: Execute generated code safely
-│   ├── validator.py            # Stage 4: Validate and explain
-│   └── governance.py           # Stage 5: Governance checks (deterministic)
+│   ├── intent_parser.py        # GPT-5.1 function calling
+│   ├── executor.py             # SQL execution + filter support
+│   ├── validator.py            # Result validation + explanations
+│   └── governance.py           # Governance checks (deterministic)
 ├── ui/
 │   ├── __init__.py
 │   ├── chat.py                 # Chat interface component
-│   ├── dashboard.py            # Dashboard renderer (charts, tables, KPIs)
+│   ├── dashboard.py            # Dashboard renderer (all Plotly types)
 │   ├── engine_view.py          # "Show Engine" technical view
 │   └── styles.py               # Custom CSS
 └── utils/
     ├── __init__.py
-    └── helpers.py              # Utility functions
+    └── helpers.py              # Utility functions (reserved for Phase 2)
 ```
 
-### 1a. Create `requirements.txt`:
+---
+
+## STEP 1: PROJECT SETUP
+
+### 1.1 Create `requirements.txt`
 
 ```
 streamlit>=1.30.0
@@ -74,7 +91,39 @@ duckdb>=0.9.0
 python-dotenv>=1.0.0
 ```
 
-### 1b. Create `config.py`:
+**Commit: "feat: add dependencies"**
+
+---
+
+### 1.2 Create `.env`
+
+```
+OPENAI_API_KEY=your_api_key_here
+```
+
+Do NOT commit this file. Add to `.gitignore`.
+
+---
+
+### 1.3 Create `.gitignore`
+
+```
+.env
+__pycache__/
+*.pyc
+.DS_Store
+.streamlit/
+*.csv
+venv/
+```
+
+**Commit: "chore: add .gitignore"**
+
+---
+
+### 1.4 Create `config.py`
+
+This file contains ALL templates and role definitions Phase 2 needs.
 
 ```python
 import os
@@ -97,7 +146,7 @@ PII_PATTERNS = [
     r"(?i)driver.?license", r"(?i)first.?name", r"(?i)last.?name",
 ]
 
-# Role definitions
+# Role definitions (for Phase 2 governance)
 ROLES = {
     "admin": {
         "label": "🔧 Admin",
@@ -125,7 +174,7 @@ ROLES = {
     },
 }
 
-# Template definitions
+# Template definitions (all 6 templates for launch)
 TEMPLATES = [
     {
         "id": "supplier_performance",
@@ -184,18 +233,38 @@ TEMPLATES = [
 ]
 ```
 
-### 1c. Create `data/sample_data_loader.py`:
+**Commit: "feat: add config with templates and role definitions"**
+
+---
+
+## STEP 2: DATA LOADING
+
+### 2.1 Create `data/__init__.py`
 
 ```python
+# Data module
+```
+
+---
+
+### 2.2 Create `data/sample_data_loader.py`
+
+This file provides DuckDB connection and synthetic supply chain data generation.
+
+```python
+"""Data loading and DuckDB connection management."""
+
 import duckdb
 import pandas as pd
 import os
+from datetime import datetime, timedelta
+import random
 
 def get_connection():
-    """Create a DuckDB in-memory connection with the supply chain data loaded."""
+    """Create a DuckDB in-memory connection with supply chain data loaded."""
     conn = duckdb.connect(":memory:")
 
-    # Load supply chain dataset
+    # Try to load from CSV first
     data_dir = os.path.dirname(__file__)
     csv_path = os.path.join(data_dir, "supply_chain.csv")
 
@@ -205,30 +274,33 @@ def get_connection():
             SELECT * FROM read_csv_auto('{csv_path}')
         """)
     else:
-        # Generate synthetic supply chain data if no CSV provided
+        # Generate synthetic supply chain data
         _generate_sample_data(conn)
 
     return conn
 
 def _generate_sample_data(conn):
     """Generate synthetic supply chain data for demos."""
-    import random
-    import datetime
-
     random.seed(42)
 
-    suppliers = ["Acme Corp", "GlobalParts Inc", "TechSupply Co", "PrecisionMfg",
-                 "FastShip LLC", "QualityFirst", "BulkMaterials", "MicroComponents",
-                 "SteelWorks Int", "PlastiCorp"]
+    suppliers = [
+        "Acme Corp", "GlobalParts Inc", "TechSupply Co", "PrecisionMfg",
+        "FastShip LLC", "QualityFirst", "BulkMaterials", "MicroComponents",
+        "SteelWorks Int", "PlastiCorp"
+    ]
     regions = ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East"]
-    products = ["Widget A", "Widget B", "Component X", "Component Y", "Assembly Z",
-                "Material Alpha", "Material Beta", "Part Gamma", "Part Delta", "Unit Epsilon"]
+    products = [
+        "Widget A", "Widget B", "Component X", "Component Y", "Assembly Z",
+        "Material Alpha", "Material Beta", "Part Gamma", "Part Delta", "Unit Epsilon"
+    ]
     categories = ["Raw Materials", "Components", "Finished Goods", "Packaging", "Equipment"]
     shipping_modes = ["Air", "Sea", "Rail", "Truck", "Express"]
 
     rows = []
+    base_date = datetime(2024, 1, 1)
+
     for i in range(500):
-        date = datetime.date(2025, 1, 1) + datetime.timedelta(days=random.randint(0, 420))
+        date = base_date + timedelta(days=random.randint(0, 420))
         supplier = random.choice(suppliers)
         region = random.choice(regions)
         product = random.choice(products)
@@ -275,13 +347,23 @@ def get_sample_rows(conn, table_name="supply_chain", n=5):
     return conn.execute(f"SELECT * FROM {table_name} LIMIT {n}").fetchdf()
 ```
 
-**Commit: "feat: project setup with config, data loader, and DuckDB integration"**
+**Commit: "feat: add DuckDB connection and data loader"**
 
 ---
 
-## STEP 2: AI ENGINE — INTENT PARSER
+## STEP 3: INTENT PARSER (GPT-5.1 FUNCTION CALLING)
 
-### Create `engine/intent_parser.py`:
+### 3.1 Create `engine/__init__.py`
+
+```python
+# Engine module
+```
+
+---
+
+### 3.2 Create `engine/intent_parser.py`
+
+This is the core AI engine that parses natural language into structured app definitions using GPT-5.1 function calling.
 
 ```python
 """Stage 1: Parse natural language into structured app intent using GPT-5.1 function calling."""
@@ -292,6 +374,7 @@ from config import OPENAI_API_KEY, OPENAI_MODEL
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+# Complete function schema for GPT-5.1 function calling
 APP_INTENT_FUNCTION = {
     "name": "create_data_app",
     "description": "Parse a natural language request into a structured data application definition with visualization components, data queries, and layout.",
@@ -318,7 +401,7 @@ APP_INTENT_FUNCTION = {
                         },
                         "type": {
                             "type": "string",
-                            "enum": ["kpi_card", "bar_chart", "line_chart", "pie_chart", "scatter_plot", "table", "metric_highlight", "area_chart", "heatmap"],
+                            "enum": ["kpi_card", "bar_chart", "line_chart", "pie_chart", "scatter_plot", "table", "metric_highlight", "area_chart"],
                             "description": "Type of visualization component"
                         },
                         "title": {
@@ -422,8 +505,16 @@ Rules for generating app definitions:
 When the user asks to REFINE an existing app, modify only the relevant components. Add new ones, change queries, update configurations — but preserve the overall structure unless they want a complete redesign."""
 
 def parse_intent(user_message: str, existing_app: dict = None, table_schema: str = None) -> dict:
-    """Parse user's natural language into a structured app definition."""
+    """Parse user's natural language into a structured app definition.
 
+    Args:
+        user_message: The user's natural language request
+        existing_app: Existing app definition for refinement
+        table_schema: Current table schema (optional)
+
+    Returns:
+        Dictionary with app_title, app_description, components, filters, data_summary
+    """
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
     if existing_app:
@@ -435,7 +526,7 @@ def parse_intent(user_message: str, existing_app: dict = None, table_schema: str
     if table_schema:
         messages.append({
             "role": "system",
-            "content": f"Current table schema (may differ from default):\n{table_schema}"
+            "content": f"Current table schema:\n{table_schema}"
         })
 
     messages.append({"role": "user", "content": user_message})
@@ -455,13 +546,13 @@ def parse_intent(user_message: str, existing_app: dict = None, table_schema: str
     return result
 ```
 
-**Commit: "feat: add intent parser with GPT-5.1 function calling for data app generation"**
+**Commit: "feat: add GPT-5.1 intent parser with complete function schema"**
 
 ---
 
-## STEP 3: AI ENGINE — CODE EXECUTOR AND GOVERNANCE
+## STEP 4: SQL EXECUTOR
 
-### Create `engine/executor.py`:
+### 4.1 Create `engine/executor.py`
 
 ```python
 """Stage 3: Safely execute generated SQL queries against DuckDB."""
@@ -512,7 +603,13 @@ def execute_query(conn: duckdb.DuckDBPyConnection, sql_query: str, filters: dict
 def execute_app_components(conn: duckdb.DuckDBPyConnection, app_definition: dict, filters: dict = None) -> dict:
     """Execute all component queries in an app definition.
 
-    Returns dict mapping component_id -> {data: DataFrame, error: str or None}
+    Args:
+        conn: DuckDB connection
+        app_definition: App definition with components
+        filters: Optional filters to apply
+
+    Returns:
+        Dict mapping component_id -> {data: DataFrame, error: str or None, component: dict}
     """
     results = {}
 
@@ -530,14 +627,27 @@ def execute_app_components(conn: duckdb.DuckDBPyConnection, app_definition: dict
     return results
 ```
 
-### Create `engine/validator.py`:
+**Commit: "feat: add SQL executor with filter support"**
+
+---
+
+## STEP 5: VALIDATOR
+
+### 5.1 Create `engine/validator.py`
 
 ```python
 """Stage 4: Validate generated queries and explain in plain English."""
 
 def validate_and_explain(app_definition: dict, execution_results: dict) -> dict:
-    """Validate the app and generate plain-English explanations."""
+    """Validate the app and generate plain-English explanations.
 
+    Args:
+        app_definition: The app definition with components
+        execution_results: Results from executing all components
+
+    Returns:
+        Dict with explanations, warnings, overall_status
+    """
     explanations = []
     warnings = []
 
@@ -617,7 +727,13 @@ def validate_and_explain(app_definition: dict, execution_results: dict) -> dict:
     }
 ```
 
-### Create `engine/governance.py`:
+**Commit: "feat: add validator with plain-English explanations"**
+
+---
+
+## STEP 6: GOVERNANCE CHECKS (DETERMINISTIC)
+
+### 6.1 Create `engine/governance.py`
 
 ```python
 """Stage 5: Governance checks — deterministic, no AI calls."""
@@ -628,13 +744,13 @@ from config import PII_PATTERNS, ROLES
 def run_governance_checks(app_definition: dict, role: str, execution_results: dict = None) -> dict:
     """Run governance checks on the app definition.
 
+    Args:
+        app_definition: The app definition
+        role: Current user role (admin, analyst, viewer)
+        execution_results: Optional results from query execution
+
     Returns:
-        {
-            "checks": [{"rule": str, "status": "pass"|"warning"|"fail", "message": str}],
-            "requires_approval": bool,
-            "pii_columns_detected": list,
-            "overall_status": "compliant"|"review_required"|"non_compliant"
-        }
+        Dict with checks, requires_approval, pii_columns_detected, overall_status
     """
     checks = []
     pii_detected = []
@@ -709,14 +825,18 @@ def run_governance_checks(app_definition: dict, role: str, execution_results: di
         })
 
     # 4. Data Quality — check for SELECT * patterns
+    has_select_star = False
     for comp in app_definition.get("components", []):
         if "SELECT *" in comp.get("sql_query", "").upper():
-            checks.append({
-                "rule": "Data Quality",
-                "status": "warning",
-                "message": f"Component '{comp['title']}' uses SELECT * — consider selecting specific columns for performance.",
-            })
+            has_select_star = True
             break
+
+    if has_select_star:
+        checks.append({
+            "rule": "Data Quality",
+            "status": "warning",
+            "message": "Some queries use SELECT * — consider selecting specific columns for performance.",
+        })
     else:
         checks.append({
             "rule": "Data Quality",
@@ -759,13 +879,21 @@ def run_governance_checks(app_definition: dict, role: str, execution_results: di
     }
 ```
 
-**Commit: "feat: add executor, validator, and governance checks"**
+**Commit: "feat: add deterministic governance checks"**
 
 ---
 
-## STEP 4: UI COMPONENTS
+## STEP 7: UI COMPONENTS
 
-### Create `ui/styles.py`:
+### 7.1 Create `ui/__init__.py`
+
+```python
+# UI module
+```
+
+---
+
+### 7.2 Create `ui/styles.py`
 
 ```python
 """Custom CSS for StackForge dark theme."""
@@ -847,7 +975,11 @@ CUSTOM_CSS = """
 """
 ```
 
-### Create `ui/chat.py`:
+**Commit: "feat: add custom CSS styling"**
+
+---
+
+### 7.3 Create `ui/chat.py`
 
 ```python
 """Chat interface component for StackForge."""
@@ -856,8 +988,11 @@ import streamlit as st
 from datetime import datetime
 
 def render_chat_interface():
-    """Render the conversational chat interface."""
+    """Render the conversational chat interface.
 
+    Returns:
+        User message string if one was submitted, None otherwise
+    """
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -882,12 +1017,24 @@ def render_chat_interface():
     return None
 
 def add_assistant_message(content: str, app_summary: str = None):
-    """Add an assistant message to the chat."""
+    """Add an assistant message to the chat.
+
+    Args:
+        content: Assistant message text
+        app_summary: Optional app description to show in expander
+    """
     msg = {"role": "assistant", "content": content, "app_summary": app_summary}
     st.session_state.messages.append(msg)
 
 def render_template_selector(templates: list):
-    """Render template selection cards when chat is empty."""
+    """Render template selection cards when chat is empty.
+
+    Args:
+        templates: List of template definitions from config
+
+    Returns:
+        Selected template dict if user clicked one, None otherwise
+    """
     if st.session_state.get("messages"):
         return None
 
@@ -910,7 +1057,13 @@ def render_template_selector(templates: list):
     return selected
 ```
 
-### Create `ui/dashboard.py`:
+**Commit: "feat: add chat interface component"**
+
+---
+
+### 7.4 Create `ui/dashboard.py`
+
+This is the complete dashboard renderer with all Plotly chart types.
 
 ```python
 """Dashboard renderer — generates interactive Plotly charts, KPI cards, and tables."""
@@ -921,8 +1074,13 @@ import plotly.graph_objects as go
 import pandas as pd
 
 def render_dashboard(app_definition: dict, execution_results: dict, role: str = "analyst"):
-    """Render the complete dashboard from app definition and query results."""
+    """Render the complete dashboard from app definition and query results.
 
+    Args:
+        app_definition: App definition with components
+        execution_results: Results from executing component queries
+        role: Current user role for display logic
+    """
     if not app_definition:
         _render_empty_state()
         return
@@ -931,7 +1089,7 @@ def render_dashboard(app_definition: dict, execution_results: dict, role: str = 
     st.markdown(f"## {app_definition.get('app_title', 'Data App')}")
     st.caption(app_definition.get("app_description", ""))
 
-    # Render filters in sidebar or top bar
+    # Render filters
     filters = _render_filters(app_definition.get("filters", []), execution_results)
 
     # Render components by layout
@@ -983,7 +1141,15 @@ def _render_empty_state():
         st.caption("Key metrics with trend indicators")
 
 def _render_filters(filter_defs: list, execution_results: dict) -> dict:
-    """Render sidebar filters and return selected values."""
+    """Render sidebar filters and return selected values.
+
+    Args:
+        filter_defs: Filter definitions from app
+        execution_results: Results for extracting unique values
+
+    Returns:
+        Dict mapping column -> selected value(s)
+    """
     if not filter_defs:
         return {}
 
@@ -1018,16 +1184,23 @@ def _render_filters(filter_defs: list, execution_results: dict) -> dict:
                     filters[col] = date_range
             elif ftype == "number_range":
                 if unique_values:
-                    min_val = min([v for v in unique_values if isinstance(v, (int, float))] or [0])
-                    max_val = max([v for v in unique_values if isinstance(v, (int, float))] or [100])
-                    selected = st.slider(label, min_val, max_val, (min_val, max_val), key=f"filter_{col}")
-                    if selected != (min_val, max_val):
-                        filters[col] = selected
+                    numeric_values = [v for v in unique_values if isinstance(v, (int, float))]
+                    if numeric_values:
+                        min_val = min(numeric_values)
+                        max_val = max(numeric_values)
+                        selected = st.slider(label, min_val, max_val, (min_val, max_val), key=f"filter_{col}")
+                        if selected != (min_val, max_val):
+                            filters[col] = selected
 
     return filters
 
 def _render_component(component: dict, execution_results: dict):
-    """Render a single dashboard component."""
+    """Render a single dashboard component.
+
+    Args:
+        component: Component definition
+        execution_results: Execution results for this component
+    """
     comp_id = component["id"]
     comp_type = component["type"]
     title = component["title"]
@@ -1091,6 +1264,8 @@ def _render_bar_chart(title: str, df: pd.DataFrame, config: dict):
         paper_bgcolor="rgba(0,0,0,0)",
         font_color="#e2e8f0",
         height=400,
+        showlegend=True,
+        hovermode="closest",
     )
 
     # Add threshold line if configured
@@ -1115,6 +1290,7 @@ def _render_line_chart(title: str, df: pd.DataFrame, config: dict):
         paper_bgcolor="rgba(0,0,0,0)",
         font_color="#e2e8f0",
         height=400,
+        hovermode="x unified",
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -1130,6 +1306,7 @@ def _render_pie_chart(title: str, df: pd.DataFrame, config: dict):
         paper_bgcolor="rgba(0,0,0,0)",
         font_color="#e2e8f0",
         height=400,
+        showlegend=True,
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -1140,12 +1317,13 @@ def _render_scatter(title: str, df: pd.DataFrame, config: dict):
     color_col = config.get("color_column")
 
     fig = px.scatter(df, x=x_col, y=y_col, color=color_col, title=title,
-                     template="plotly_dark")
+                     template="plotly_dark", size_max=60)
     fig.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font_color="#e2e8f0",
         height=400,
+        hovermode="closest",
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -1162,6 +1340,7 @@ def _render_area_chart(title: str, df: pd.DataFrame, config: dict):
         paper_bgcolor="rgba(0,0,0,0)",
         font_color="#e2e8f0",
         height=400,
+        hovermode="x unified",
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -1187,13 +1366,18 @@ def _render_metric_highlight(title: str, df: pd.DataFrame, config: dict):
     threshold = config.get("threshold")
 
     if threshold and isinstance(value, (int, float)):
-        color = config.get("threshold_color", "red") if value > threshold else "green"
-        st.metric(label=title, value=f"{value:.1f}%", delta=f"{'Above' if value > threshold else 'Below'} threshold ({threshold})")
+        delta_color = "green" if value <= threshold else "red"
+        delta_text = f"{'Below' if value <= threshold else 'Above'} threshold ({threshold})"
+        st.metric(label=title, value=f"{value:.1f}%", delta=delta_text)
     else:
         st.metric(label=title, value=str(value))
 ```
 
-### Create `ui/engine_view.py`:
+**Commit: "feat: add complete dashboard renderer with all Plotly chart types"**
+
+---
+
+### 7.5 Create `ui/engine_view.py`
 
 ```python
 """Show Engine view — reveals the technical internals behind the dashboard."""
@@ -1202,8 +1386,14 @@ import streamlit as st
 import json
 
 def render_engine_view(app_definition: dict, execution_results: dict, validation: dict, governance: dict):
-    """Render the technical engine view showing what's happening under the hood."""
+    """Render the technical engine view showing what's happening under the hood.
 
+    Args:
+        app_definition: App definition with components
+        execution_results: Results from executing all components
+        validation: Validation results
+        governance: Governance check results
+    """
     if not app_definition:
         st.info("🔧 The engine view will show generated code, DAG, and governance audit when you build an app.")
         return
@@ -1229,7 +1419,6 @@ def render_engine_view(app_definition: dict, execution_results: dict, validation
         st.markdown("### Data Transformation Flow")
         st.caption("How data flows from source to each visualization component.")
 
-        # Show data flow as a simple diagram
         st.markdown("```")
         st.markdown("supply_chain (raw data)")
         st.markdown("         │")
@@ -1241,9 +1430,11 @@ def render_engine_view(app_definition: dict, execution_results: dict, validation
             st.markdown("         │")
 
         for comp in app_definition.get("components", []):
-            icon = {"kpi_card": "🎯", "bar_chart": "📊", "line_chart": "📈",
-                    "pie_chart": "🥧", "table": "📋", "scatter_plot": "⚡",
-                    "area_chart": "📉", "metric_highlight": "🔴"}.get(comp["type"], "📦")
+            icon = {
+                "kpi_card": "🎯", "bar_chart": "📊", "line_chart": "📈",
+                "pie_chart": "🥧", "table": "📋", "scatter_plot": "⚡",
+                "area_chart": "📉", "metric_highlight": "🔴"
+            }.get(comp["type"], "📦")
             st.markdown(f"    ├──→ {icon} {comp['title']}")
 
         st.markdown("```")
@@ -1304,7 +1495,12 @@ def _render_audit_log():
         st.caption(entry.get("details", ""))
 
 def add_audit_entry(action: str, details: str = ""):
-    """Add an entry to the audit log."""
+    """Add an entry to the audit log.
+
+    Args:
+        action: Action description
+        details: Optional additional details
+    """
     from datetime import datetime
 
     if "audit_log" not in st.session_state:
@@ -1317,17 +1513,38 @@ def add_audit_entry(action: str, details: str = ""):
     })
 ```
 
-**Commit: "feat: add UI components — chat, dashboard renderer, engine view"**
+**Commit: "feat: add engine view with SQL, data flow, governance, and audit log"**
 
 ---
 
-## STEP 5: MAIN APPLICATION
+## STEP 8: MAIN APPLICATION
 
-### Create `app.py`:
+### 8.1 Create `utils/__init__.py`
+
+```python
+# Utilities module
+```
+
+---
+
+### 8.2 Create `utils/helpers.py`
+
+```python
+"""Utility functions (reserved for Phase 2 expansions)."""
+
+# Phase 2: Data masking, PII handling, template library functions
+```
+
+---
+
+### 8.3 Create `app.py` (MAIN APPLICATION)
+
+This is the complete Streamlit app that ties everything together.
 
 ```python
 """StackForge — AI-Powered Data App Factory
 Built at HackUSU 2026 · Data App Factory Track
+Sponsored by Koch Industries, Databricks, and AWS
 """
 
 import streamlit as st
@@ -1428,8 +1645,11 @@ st.divider()
 chat_col, dash_col = st.columns([0.35, 0.65])
 
 def _process_prompt(prompt: str):
-    """Process a user prompt through the full pipeline."""
+    """Process a user prompt through the full pipeline.
 
+    Args:
+        prompt: User's natural language request
+    """
     with st.spinner("🧠 Parsing intent..."):
         add_audit_entry("Intent parsing started", f"Prompt: {prompt[:80]}...")
 
@@ -1568,90 +1788,124 @@ with st.sidebar:
     st.caption(f"Built at HackUSU 2026 · Data App Factory Track")
 ```
 
-**Commit: "feat: assemble main application with chat + dashboard + engine view"**
+**Commit: "feat: assemble complete main application with end-to-end pipeline"**
 
 ---
 
-## STEP 6: FINAL VERIFICATION AND DEMO POLISH
+## STEP 9: VERIFICATION CHECKLIST
 
-### Verification Checklist:
+Before running, verify all files are in place:
 
-- [ ] `streamlit run app.py` launches without errors
-- [ ] Demo button triggers full end-to-end flow with real data
-- [ ] All 6 templates generate valid dashboards
-- [ ] Charts render interactively (Plotly hover, zoom, etc.)
-- [ ] KPI cards display formatted values correctly
-- [ ] Tables are interactive and sortable
-- [ ] SQL queries execute successfully against DuckDB
-- [ ] Chat interface displays messages correctly
-- [ ] Role toggle switches between analyst and admin views
-- [ ] Governance panel shows checks with correct status icons
-- [ ] PII detection works for email, phone, salary patterns
-- [ ] Show Engine toggle reveals all tabs: SQL, Data Flow, Governance, Audit Log
-- [ ] Generated SQL is syntactically valid DuckDB
-- [ ] Filters work and update dashboard in real-time
-- [ ] No console errors when running
-- [ ] Dark theme applies throughout UI
-- [ ] Performance is acceptable (no lag on interactions)
+- [ ] `requirements.txt` exists and has all dependencies
+- [ ] `.env` file created with `OPENAI_API_KEY`
+- [ ] `.gitignore` created and excludes `.env`
+- [ ] `config.py` has all 6 templates and 3 roles defined
+- [ ] `data/sample_data_loader.py` creates DuckDB connection and synthetic data
+- [ ] `engine/intent_parser.py` has complete GPT-5.1 function schema
+- [ ] `engine/executor.py` executes SQL with filter support
+- [ ] `engine/validator.py` validates and explains results
+- [ ] `engine/governance.py` runs deterministic governance checks
+- [ ] `ui/styles.py` has dark theme CSS
+- [ ] `ui/chat.py` renders conversational interface
+- [ ] `ui/dashboard.py` has all Plotly chart types (bar, line, pie, scatter, area)
+- [ ] `ui/engine_view.py` has "Show Engine" tabs
+- [ ] `app.py` is complete with two-column layout and full pipeline
+- [ ] All `__init__.py` files exist in packages
 
-### Demo Mode Flow:
+### Running Phase 1
 
-1. Click "Demo" button
-2. Auto-send Supplier Performance template prompt
-3. Build full app: diagram renders → code generates → governance checks pass
-4. Chat shows assistant response with 6+ components
-5. After 2 seconds, auto-send refinement: "Break down by shipping mode"
-6. Pipeline updates in real-time via conversational refinement
-7. Governance panel shows all checks passing
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
-**Commit: "feat: complete StackForge Data App Factory MVP — ready for demo"**
+# Launch Streamlit app
+streamlit run app.py
+```
+
+### Testing Phase 1
+
+1. **Click Demo button** — should trigger Supplier Performance template
+2. **User chat input** — type "Show me supplier defect rates by region"
+3. **Verify pipeline:**
+   - Intent parser generates app definition (no errors)
+   - Executor runs all SQL queries successfully
+   - Dashboard renders with KPI cards, charts, tables
+   - Filters work and update dashboard
+   - Governance checks pass
+4. **Test Show Engine toggle** — reveal SQL, data flow, governance, audit log
+5. **Test role switching** — change role and verify governance updates
+6. **Test template selection** — click template cards to auto-generate apps
 
 ---
 
-## IMPORTANT NOTES FOR SUCCESS
+## PHASE 1 SUMMARY
 
-**What Judges Will Look For:**
+**What's included:**
+- Complete conversational data app builder
+- GPT-5.1 function calling for intent parsing
+- DuckDB SQL execution with real supply chain data
+- All Plotly chart types (bar, line, pie, scatter, area)
+- KPI cards, data tables, filters
+- Governance checks (deterministic)
+- Role-based display logic
+- "Show Engine" technical view
+- Chat interface with message history
+- Audit logging
 
-1. **Interactive dashboards, not static reports** — Plotly charts with hover, zoom, legend interaction. Real live data from Supply Chain dataset.
+**What's NOT included (Phase 2+):**
+- Data masking for PII columns
+- Template library UI customization
+- Demo mode with auto-refinement
+- Conversational refinement flows
+- Deployment and sharing controls
 
-2. **Conversational, not transactional** — Follow-up messages refine the app. Back-and-forth chat, not a one-shot form.
+**End state:** User types a natural language description → Live interactive Plotly dashboard with filters, KPI cards, charts, and tables.
 
-3. **Governance is core, not bolted-on** — PII detection visible, role-based access working, audit log populated, compliance checks prominent.
+**Commits made:**
+1. "feat: add dependencies"
+2. "chore: add .gitignore"
+3. "feat: add config with templates and role definitions"
+4. "feat: add DuckDB connection and data loader"
+5. "feat: add GPT-5.1 intent parser with complete function schema"
+6. "feat: add SQL executor with filter support"
+7. "feat: add validator with plain-English explanations"
+8. "feat: add deterministic governance checks"
+9. "feat: add custom CSS styling"
+10. "feat: add chat interface component"
+11. "feat: add complete dashboard renderer with all Plotly chart types"
+12. "feat: add engine view with SQL, data flow, governance, and audit log"
+13. "feat: assemble complete main application with end-to-end pipeline"
 
-4. **Factory model** — Templates empower citizens to quickly create apps without coding.
+---
 
-5. **Technical transparency** — "Show Engine" toggle reveals the AI's reasoning (SQL, data flow, governance).
+## CRITICAL IMPLEMENTATION NOTES
 
-6. **Real data, real ecosystem** — Supply Chain dataset from Koch. Terminology around Databricks, AWS, DuckDB.
+**GPT-5.1 function calling:**
+- Always use `tool_choice` to force function calling, not optional
+- Complete function schema must include all enum values for chart types
+- System prompt provides full table schema and generation rules
+- Temperature set to 0.3 for reproducibility
 
-7. **Polish and UX** — Dark theme, smooth interactions, no console errors, fast loading.
+**DuckDB SQL:**
+- All queries must be valid DuckDB syntax
+- Use `read_csv_auto()` for CSV loading
+- Support for GROUP BY, aggregations, date_part, strftime
+- Filter application wraps queries in subqueries
 
-**File Structure (Final):**
+**Plotly rendering:**
+- All charts use dark theme (`template="plotly_dark"`)
+- Charts responsive and interactive (hover, zoom, legend)
+- KPI cards use st.metric for formatting
+- Tables are sortable and support pagination
 
-```
-stackforge/
-├── app.py
-├── requirements.txt
-├── config.py
-├── .env
-├── data/
-│   ├── supply_chain.csv
-│   └── sample_data_loader.py
-├── engine/
-│   ├── __init__.py
-│   ├── intent_parser.py
-│   ├── executor.py
-│   ├── validator.py
-│   └── governance.py
-├── ui/
-│   ├── __init__.py
-│   ├── chat.py
-│   ├── dashboard.py
-│   ├── engine_view.py
-│   └── styles.py
-└── utils/
-    ├── __init__.py
-    └── helpers.py
-```
+**Governance:**
+- PII detection uses regex patterns from config
+- Role-based access controls on components and data
+- Approval workflow for analysts and viewers
+- Audit trail logs all major actions
 
-This PRD is complete, comprehensive, and production-ready. Build step-by-step, commit after each milestone. Good luck at HackUSU 2026!
+---
+
+**Built at HackUSU 2026 · Data App Factory Track**
+
+This is a complete, production-ready Phase 1 implementation. Claude Code can build the entire thing from this document alone.

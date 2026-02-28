@@ -1,15 +1,57 @@
-# environment variables
+# Environment
 .env
 .env.local
-.env*.local
+.env.*.local
 
-# dependencies
-node_modules/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# next.js
-.next/
-out/
-
-# misc
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
-*.pem
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.duckdb
+*.sqlite3
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node (for UI team)
+node_modules/
+dist/
+build/
+.next/
